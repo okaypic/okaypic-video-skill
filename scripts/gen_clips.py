@@ -32,6 +32,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from okaypic_api import data_uri, download, request  # noqa: E402
+from edit import level_take  # noqa: E402
 
 MAX_INFLIGHT = 18
 POLL_SECONDS = 20
@@ -80,6 +81,10 @@ def main():
                 mp4 = os.path.join(takes_dir, f"{k}.mp4")
                 download(r["resultUrls"][0], mp4)
                 contact_sheet(mp4)
+                try:
+                    level_take(mp4)  # -16 LUFS copy in takes/leveled/ for the editor and the cut
+                except Exception as e:
+                    print(f"level {k}: {e}", flush=True)
                 state[k].update(status="completed", url=r["resultUrls"][0])
                 print(f"done {k}", flush=True)
             elif r.get("status") == "failed":

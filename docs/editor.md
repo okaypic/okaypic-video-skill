@@ -28,7 +28,7 @@ interchangeable.
 | Do | Effect |
 |---|---|
 | Click the ruler, or drag along it | Move the playhead / scrub |
-| Click a clip | Select it (inspector: take, skip, in/out, prompt) |
+| Click a clip | Select it (inspector: take, skip, in/out, volume ±dB, prompt) |
 | Drag a clip's **left edge** | Trim the head (`trim.in`); everything after shifts left |
 | Drag a clip's **right edge** | Trim the tail (`trim.out`) |
 | Drag a caption block | Move it (start and end together), kept inside its clip |
@@ -38,6 +38,13 @@ interchangeable.
 
 Caption blocks are shown in both language tracks; a dashed block means that language has no text
 yet. Times are stored relative to the untrimmed take, so trimming a clip never moves its captions.
+
+## Volume
+
+Every take is levelled to −16 LUFS when the editor starts (`takes/leveled/`), so clips already
+sit at the same loudness in the preview. The **volume** slider in a clip's inspector adds
+−12…+12 dB on top (stored as `gain` in `edit.json`, previewed live through Web Audio, applied
+identically on export); a gold `+3 dB` badge on the clip block shows it is set.
 
 ## Keyboard
 

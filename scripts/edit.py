@@ -9,7 +9,7 @@ Reads <episode_dir>/shots.json (shot order + prompts) and <episode_dir>/edit.jso
      "skip": ["02"],                             # shots left out of the cut
      "trim": {"01": {"in": 0.4, "out": 9.6}},    # seconds inside the take (out = clip end if missing)
      "captions": {"01": [{"start": 0.0, "end": 6.3, "en": "...", "zh": "..."}]},
-     "gain": {"02": 3},                          # extra dB for a shot
+     "gain": {"02": 3},                          # dB on top of the levelled take (-12..12)
      "fonts": {"en": "fonts/NotoSans-Bold.ttf", "zh": "fonts/NotoSansSC-Bold.otf"},  # under assets/
      "endcard": {"title": "MY FILM", "sub": "Episode 1", "price": "Made with okaypic.com"}}
 
@@ -141,8 +141,49 @@ def save_cfg(ep_dir, cfg):
         json.dump(cfg, f, indent=1, ensure_ascii=False)
 
 
-def take_path(ep_dir, cfg, sid):
+def level_take(mp4, log=None):
+    """Make a loudness-levelled copy of a take (audio to -16 LUFS, video stream copied, +faststart)
+    in takes/leveled/. H3 takes come out anywhere between -26 and -10 LUFS; levelling them once
+    means the editor preview and the final cut hear the same thing, and renders skip the per-clip
+    loudnorm. Cached: skipped when the copy is newer than the take."""
+    out = os.path.join(os.path.dirname(mp4), "leveled", os.path.basename(mp4))
+    if os.path.exists(out) and os.path.getmtime(out) >= os.path.getmtime(mp4):
+        return out
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    if log:
+        log(f"levelling {os.path.basename(mp4)}")
+    r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", mp4, "-c:v", "copy",
+                        "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
+                        "-movflags", "+faststart", out], capture_output=True, text=True)
+    if r.returncode != 0:
+        if os.path.exists(out):
+            os.remove(out)
+        raise RuntimeError(f"levelling failed for {mp4}: {r.stderr[-400:]}")
+    return out
+
+
+def level_all(ep_dir, log=None):
+    takes = os.path.join(ep_dir, "takes")
+    if not os.path.isdir(takes):
+        return 0
+    n = 0
+    for f in sorted(os.listdir(takes)):
+        if f.endswith(".mp4"):
+            before = os.path.exists(os.path.join(takes, "leveled", f))
+            level_take(os.path.join(takes, f), log)
+            n += 0 if before else 1
+    return n
+
+
+def raw_take_path(ep_dir, cfg, sid):
     return os.path.join(ep_dir, "takes", f"{sid}_{cfg.get('picks', {}).get(sid, 'a')}.mp4")
+
+
+def take_path(ep_dir, cfg, sid):
+    """The levelled copy when it exists, else the raw take."""
+    raw = raw_take_path(ep_dir, cfg, sid)
+    lv = os.path.join(os.path.dirname(raw), "leveled", os.path.basename(raw))
+    return lv if os.path.exists(lv) else raw
 
 
 def fill_missing_captions(ep_dir, spec, cfg):
@@ -160,6 +201,7 @@ def fill_missing_captions(ep_dir, spec, cfg):
 
 def render(ep_dir, lang="en", log=print):
     ep_dir = os.path.abspath(ep_dir)
+    level_all(ep_dir, log)
     spec, cfg = load(ep_dir)
     if fill_missing_captions(ep_dir, spec, cfg):
         save_cfg(ep_dir, cfg)
@@ -202,11 +244,12 @@ def render(ep_dir, lang="en", log=print):
             vchain += "," + drawtext(font, tf, a, b, size)
             timeline.append((round(t0 + a, 1), round(t0 + b, 1), sid, text))
         vparts.append(f"[{idx}:v]{vchain}[v{idx}]")
-        gain = cfg.get("gain", {}).get(sid, 0)
-        # H3 takes come out anywhere between -26 and -10 LUFS: level each clip to -16 first.
+        gain = float(cfg.get("gain", {}).get(sid, 0) or 0)
+        # Takes are already levelled to -16 LUFS (level_take); a raw take only slips through when
+        # levelling failed, so normalise it inline in that case.
+        lvl = "" if "leveled" in mp4.replace("\\", "/").split("/") else "loudnorm=I=-16:TP=-1.5:LRA=11,"
         aparts.append(f"[{idx}:a]atrim=start={tin:.3f}:end={tout:.3f},asetpts=PTS-STARTPTS,"
-                      f"aformat=sample_rates=48000:channel_layouts=stereo,"
-                      f"loudnorm=I=-16:TP=-1.5:LRA=11,volume={gain}dB[a{idx}]")
+                      f"aformat=sample_rates=48000:channel_layouts=stereo,{lvl}volume={gain}dB[a{idx}]")
         t0 += tout - tin
 
     if "endcard" in cfg:
@@ -245,7 +288,11 @@ def main():
     ap.add_argument("episode_dir")
     ap.add_argument("--lang", default="en", choices=["en", "zh"])
     ap.add_argument("--autotime", action="store_true", help="only fill missing captions into edit.json")
+    ap.add_argument("--level", action="store_true", help="only make the levelled copies of the takes")
     a = ap.parse_args()
+    if a.level:
+        print("levelled", level_all(a.episode_dir, print), "new takes")
+        return
     if a.autotime:
         spec, cfg = load(a.episode_dir)
         if fill_missing_captions(a.episode_dir, spec, cfg):

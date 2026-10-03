@@ -27,7 +27,7 @@ Written by the editor UI, readable by hand, rendered by `edit.py`.
 | `picks` | Take letter per shot. Missing → `a`. |
 | `skip` | Shots left out of the cut (kept in `shots.json` so they can come back). |
 | `trim` | Seconds inside the take. `out` missing or null = end of clip. Caption times stay relative to the untrimmed take. |
-| `gain` | Extra dB per shot, applied after the per-clip levelling. |
+| `gain` | dB per shot on top of the levelled take (−12…+12; the editor's volume slider). |
 | `captions` | Per shot, in order. `start`/`end` in seconds of the untrimmed take; `en` and `zh` text (empty = not shown in that language). |
 | `endcard` | Omit the key to render without an end card. `title` big, `sub` under it, `okaypic.com` in brand gold, `price` small. Uses `assets/logo.png` if present. |
 
@@ -43,8 +43,12 @@ side. Lines wrap automatically (46 Latin characters / 24 CJK characters per line
 
 ## Rendering
 
-- Every clip: `trim`, scale to 1280×720, 30 fps, captions burned in with a black border, audio
-  levelled to −16 LUFS (H3 takes vary from −26 to −10 LUFS between clips).
+- Takes are levelled once, up front: `takes/leveled/<take>.mp4` is the take with its audio at
+  −16 LUFS (video stream copied, so it takes a second per clip). `gen_clips.py` makes it on
+  download, `editor.py` on startup, `edit.py` before a render (`--level` does only that). H3 takes
+  vary from −26 to −10 LUFS between clips; the editor preview and the cut both use the levelled
+  copies, so what you hear while editing is what you get.
+- Every clip: `trim`, scale to 1280×720, 30 fps, captions burned in with a black border, `gain`.
 - Hard-cut concat, then the whole programme is normalised to −14 LUFS / −1.5 dBTP.
 - H.264 CRF 20 slow, AAC 192 kbps, `+faststart`. A 5-minute episode is ~80 MB.
 - `filter_<lang>.txt` (the ffmpeg filter graph) and `captions/timeline_<lang>.txt` (every caption

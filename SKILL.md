@@ -81,8 +81,10 @@ the estimate before each paid step and **get their OK on the plan before generat
 - Crowds, exact blocking, or strict continuity with the previous shot: render the opening frame
   as an image first (reference sheets as `images`), then lock it with `first_frame` in the shot
   (ref_mode "okay"). See `docs/prompting-h3.md`.
-- Loudness of generated takes varies by 15 dB; `edit.py` levels each clip to −16 LUFS before the
-  final normalisation. If a narration is still buried, add `"gain": {"02": 4}` in `edit.json`.
+- Loudness of generated takes varies by 15 dB. Every take gets a levelled copy
+  (`takes/leveled/`, −16 LUFS) as soon as it is downloaded; the editor previews and `edit.py`
+  renders from those copies, then normalises the programme to −14 LUFS. If a narration is still
+  buried, set the clip's volume slider in the editor (or `"gain": {"02": 4}` in `edit.json`).
 
 ## Guardrails
 

@@ -51,6 +51,7 @@
   .clip.selected { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
   .clip.skipped { opacity: .35; background-image: none !important; }
   .clip .name { position: absolute; left: 6px; top: 4px; font-size: 11px; font-weight: 600; text-shadow: 0 0 4px #000; background: rgba(0,0,0,.55); padding: 0 5px; border-radius: 3px; }
+  .clip .name em { font-style: normal; color: var(--gold); margin-left: 4px; }
   .clip .len { position: absolute; right: 6px; bottom: 4px; font-size: 10px; color: #ddd; text-shadow: 0 0 4px #000; }
   .handle { position: absolute; top: 0; bottom: 0; width: 9px; cursor: ew-resize; background: rgba(245,197,66,.0); }
   .handle.l { left: 0; border-left: 3px solid rgba(245,197,66,.8); }
@@ -192,7 +193,8 @@ function renderTimeline() {
     d.dataset.sid = c.sid;
     if (c.skipped) { d.style.left = (total * pps + 20 + skippedX) + 'px'; d.style.width = '60px'; skippedX += 66; }
     else { d.style.left = c.start * pps + 'px'; d.style.width = Math.max(c.len * pps, 14) + 'px'; d.style.backgroundImage = `url(/takes/${c.sid}_${c.take}.jpg)`; }
-    d.innerHTML = `<span class="name">${c.sid}${c.take}</span><span class="len">${c.skipped ? 'skipped' : fmt2(c.len) + 's'}</span>` +
+    const g = +((cfg().gain || {})[c.sid] || 0);
+    d.innerHTML = `<span class="name">${c.sid}${c.take}${g ? ` <em>${g > 0 ? '+' : ''}${g} dB</em>` : ''}</span><span class="len">${c.skipped ? 'skipped' : fmt2(c.len) + 's'}</span>` +
       (c.skipped ? '' : '<div class="handle l" data-h="l"></div><div class="handle r" data-h="r"></div>');
     ct.appendChild(d);
   }
@@ -231,8 +233,18 @@ function updatePlayhead() {
 }
 
 // ---------- player ----------
+// Per-shot gain is previewed through Web Audio (an <video>'s own volume can only go down).
+let actx = null; const gains = [];
+function audioInit() {
+  if (actx) return;
+  try {
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    vids.forEach((v, i) => { const g = actx.createGain(); actx.createMediaElementSource(v).connect(g).connect(actx.destination); gains[i] = g; });
+  } catch (e) { actx = null; }
+}
+function applyGain(vi, sid) { if (gains[vi]) gains[vi].gain.value = Math.pow(10, (+((cfg().gain || {})[sid] || 0)) / 20); }
 function srcFor(c) { return `/takes/${c.sid}_${c.take}.mp4`; }
-function prepare(vi, c) { const v = vids[vi]; const s = srcFor(c); if (!v.src.endsWith(s)) { v.src = s; v.load(); } return v; }
+function prepare(vi, c) { const v = vids[vi]; const s = srcFor(c); if (!v.src.endsWith(s)) { v.src = s; v.load(); } applyGain(vi, c.sid); return v; }
 function show(vi) { vids[vi].classList.remove('hidden'); vids[1 - vi].classList.add('hidden'); active = vi; }
 let curClip = null;
 function seekTo(tt, keepPlaying = playing) {
@@ -271,7 +283,7 @@ function tick() {
   }
   requestAnimationFrame(tick);
 }
-function play() { playing = true; $('#play').textContent = '⏸ Pause'; seekTo(t, true); requestAnimationFrame(tick); }
+function play() { audioInit(); if (actx && actx.state === 'suspended') actx.resume(); playing = true; $('#play').textContent = '⏸ Pause'; seekTo(t, true); requestAnimationFrame(tick); }
 function pause() { playing = false; $('#play').textContent = '▶ Play'; vids.forEach(v => v.pause()); }
 function renderOverlay() {
   const c = curClip, lang = $('#lang').value, span = $('#overlay span');
@@ -342,8 +354,14 @@ function renderInspector() {
         <label>out <input type="number" id="iOut" step="0.1" value="${fmt2(c.out)}"></label>
         <button class="small" id="iInPh">in = playhead</button><button class="small" id="iOutPh">out = playhead</button>
         <button class="small" id="iClear">reset</button></div>
+      <div class="row"><label>volume <input type="range" id="iGain" min="-12" max="12" step="0.5" value="${+((cfg().gain || {})[c.sid] || 0)}" style="width:150px"></label>
+        <b id="iGainV">${(+((cfg().gain || {})[c.sid] || 0)).toFixed(1)} dB</b><button class="small" id="iGain0">0</button>
+        <span class="muted">(takes are pre-levelled to −16 LUFS; this adds on top)</span></div>
       <div class="row muted">refs: ${s.refs.join(', ') || '—'} · captions: ${capsOf(c.sid).length}</div>
       <div class="prompt">${s.prompt.replace(/</g, '&lt;')}</div>`;
+    const setGain = v => { (cfg().gain = cfg().gain || {})[c.sid] = +v; if (!+v) delete cfg().gain[c.sid]; $('#iGainV').textContent = (+v).toFixed(1) + ' dB'; $('#iGain').value = v; if (curClip && curClip.sid === c.sid) vids.forEach((_, i) => applyGain(i, c.sid)); markDirty(); renderTimeline(); };
+    $('#iGain').oninput = e => setGain(e.target.value);
+    $('#iGain0').onclick = () => setGain(0);
     $('#iTake').onchange = e => { (cfg().picks = cfg().picks || {})[c.sid] = e.target.value; vids.forEach(v => { v.removeAttribute('src'); v.load(); }); markDirty(); renderTimeline(); renderInspector(); seekTo(t, false); };
     $('#iSkip').onchange = e => { const sk = new Set(cfg().skip || []); e.target.checked ? sk.add(c.sid) : sk.delete(c.sid); cfg().skip = [...sk]; markDirty(); renderTimeline(); renderInspector(); seekTo(t, false); };
     const setTrim = () => { const tr = trimOf(c.sid); tr.in = +$('#iIn').value || 0; tr.out = +$('#iOut').value || null; markDirty(); renderTimeline(); renderInspector(); };

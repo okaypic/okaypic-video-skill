@@ -20,7 +20,22 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 import edit as editlib  # noqa: E402
 
-STATE = {"ep_dir": None, "durations": {}, "export": {"running": False, "log": [], "lang": None}}
+STATE = {"ep_dir": None, "durations": {}, "export": {"running": False, "log": [], "lang": None},
+         "level": {"running": False, "log": []}}
+
+
+def level_in_background():
+    """Make the -16 LUFS copies of every take once at startup so the preview and the export
+    hear the same levels. New takes that appear later are levelled on the next export."""
+    st = STATE["level"]
+    st.update(running=True, log=[])
+    try:
+        n = editlib.level_all(STATE["ep_dir"], log=lambda m: st["log"].append(str(m)))
+        st["log"].append(f"levelled {n} new takes")
+    except Exception as e:
+        st["log"].append(f"ERROR: {e}")
+    finally:
+        st["running"] = False
 
 
 def takes_for(ep_dir, sid):
@@ -48,7 +63,7 @@ def project():
             "id": s["id"], "prompt": s["prompt"], "refs": s.get("refs", []), "takes": takes,
             "durations": {t: duration(os.path.join(ep_dir, "takes", f"{s['id']}_{t}.mp4")) for t in takes},
         })
-    return {"ep": os.path.basename(ep_dir), "shots": shots, "edit": cfg}
+    return {"ep": os.path.basename(ep_dir), "shots": shots, "edit": cfg, "level": STATE["level"]}
 
 
 def run_export(lang):
@@ -112,7 +127,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not re.fullmatch(r"[\w.-]+\.(mp4|jpg)", name):
                 return self.send_error(404)
             sub = "takes" if path.startswith("/takes/") else ""
-            self.send_file(os.path.join(STATE["ep_dir"], sub, name))
+            fp = os.path.join(STATE["ep_dir"], sub, name)
+            if sub and name.endswith(".mp4"):
+                lv = os.path.join(STATE["ep_dir"], "takes", "leveled", name)  # preview the levelled audio
+                if os.path.exists(lv):
+                    fp = lv
+            self.send_file(fp)
         else:
             self.send_error(404)
 
@@ -186,6 +206,7 @@ def main():
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", a.port), Handler)
     url = f"http://127.0.0.1:{a.port}/"
     print(f"editor for {STATE['ep_dir']} at {url}", flush=True)
+    threading.Thread(target=level_in_background, daemon=True).start()
     if not a.no_browser:
         webbrowser.open(url)
     srv.serve_forever()
