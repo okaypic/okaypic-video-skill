@@ -52,6 +52,9 @@
   .clip.skipped { opacity: .35; background-image: none !important; }
   .clip .name { position: absolute; left: 6px; top: 4px; font-size: 11px; font-weight: 600; text-shadow: 0 0 4px #000; background: rgba(0,0,0,.55); padding: 0 5px; border-radius: 3px; }
   .clip .name em { font-style: normal; color: var(--gold); margin-left: 4px; }
+  .clip .x { position: absolute; right: 5px; top: 3px; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 9px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; cursor: pointer; opacity: 0; }
+  .clip:hover .x, .clip.skipped .x { opacity: 1; }
+  .clip .x:hover { background: #c0392b; }
   .clip .len { position: absolute; right: 6px; bottom: 4px; font-size: 10px; color: #ddd; text-shadow: 0 0 4px #000; }
   .handle { position: absolute; top: 0; bottom: 0; width: 9px; cursor: ew-resize; background: rgba(245,197,66,.0); }
   .handle.l { left: 0; border-left: 3px solid rgba(245,197,66,.8); }
@@ -75,7 +78,7 @@
   <label>captions <select id="lang"><option value="en">en</option><option value="zh">zh</option></select></label>
   <label>step <input type="number" id="step" value="0.2" step="0.1" min="0.05" style="width:56px"> s</label>
   <span id="saved" class="pill">saved</span>
-  <span class="muted"><kbd>space</kbd> play · <kbd>←</kbd><kbd>→</kbd> nudge selection · <kbd>I</kbd>/<kbd>O</kbd> trim clip at playhead · <kbd>Del</kbd> delete caption</span>
+  <span class="muted"><kbd>space</kbd> play · <kbd>←</kbd><kbd>→</kbd> nudge selection · <kbd>I</kbd>/<kbd>O</kbd> trim clip at playhead · <kbd>Del</kbd> remove selected clip / caption</span>
   <span style="flex:1"></span>
   <button id="exportEn" class="primary">Export EN</button>
   <button id="exportZh" class="primary">Export ZH</button>
@@ -195,7 +198,8 @@ function renderTimeline() {
     else { d.style.left = c.start * pps + 'px'; d.style.width = Math.max(c.len * pps, 14) + 'px'; d.style.backgroundImage = `url(/takes/${c.sid}_${c.take}.jpg)`; }
     const g = +((cfg().gain || {})[c.sid] || 0);
     d.innerHTML = `<span class="name">${c.sid}${c.take}${g ? ` <em>${g > 0 ? '+' : ''}${g} dB</em>` : ''}</span><span class="len">${c.skipped ? 'skipped' : fmt2(c.len) + 's'}</span>` +
-      (c.skipped ? '' : '<div class="handle l" data-h="l"></div><div class="handle r" data-h="r"></div>');
+      (c.skipped ? '<span class="x" title="put back into the cut">↩</span>'
+                 : '<span class="x" title="remove this clip from the cut">✕</span><div class="handle l" data-h="l"></div><div class="handle r" data-h="r"></div>');
     ct.appendChild(d);
   }
   // captions (two tracks: en, zh)
@@ -315,6 +319,7 @@ tl.addEventListener('pointerdown', e => {
     e.preventDefault();
   } else if (clipEl) {
     const sid = clipEl.dataset.sid, c = clipOf(sid);
+    if (e.target.closest('.x')) { setSkip(sid, !c.skipped); e.preventDefault(); return; }
     select({ type: 'clip', sid });
     if (h && !c.skipped) { drag = { kind: 'clip-' + h.dataset.h, sid, x0: e.clientX, in0: c.in, out0: c.out }; e.preventDefault(); }
     else if (!c.skipped) seekTo(xToTime(e.clientX));
@@ -341,6 +346,12 @@ $('#fit').onclick = () => { pps = clamp(($('#tlscroll').clientWidth - 220) / Mat
 
 // ---------- selection / inspector ----------
 function select(s) { sel = s; renderTimeline(); renderInspector(); }
+function setSkip(sid, skipped) {
+  // Remove a whole clip from the cut (or put it back). Nothing is deleted: the take, its trim and
+  // its captions stay in edit.json, the clip just moves to the "skipped" shelf after the end.
+  const sk = new Set(cfg().skip || []); skipped ? sk.add(sid) : sk.delete(sid); cfg().skip = [...sk];
+  sel = { type: 'clip', sid }; markDirty(); renderTimeline(); renderInspector(); seekTo(Math.min(t, totalDur()), false);
+}
 function renderInspector() {
   const ins = $('#inspector');
   if (!sel) { ins.innerHTML = '<h2>Nothing selected</h2><div class="muted">Click a clip or a caption in the timeline.</div>'; return; }
@@ -348,7 +359,7 @@ function renderInspector() {
   if (sel.type === 'clip') {
     ins.innerHTML = `<h2>Shot ${c.sid}</h2>
       <div class="row"><label>take <select id="iTake">${s.takes.map(x => `<option ${x === c.take ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
-        <label><input type="checkbox" id="iSkip" ${c.skipped ? 'checked' : ''}> skip</label>
+        <button class="small" id="iSkip">${c.skipped ? '↩ put back into the cut' : '✕ remove clip from cut'}</button>
         <span class="muted">take length ${fmt2(c.dur)}s</span></div>
       <div class="row"><label>in <input type="number" id="iIn" step="0.1" value="${fmt2(c.in)}"></label>
         <label>out <input type="number" id="iOut" step="0.1" value="${fmt2(c.out)}"></label>
@@ -363,7 +374,7 @@ function renderInspector() {
     $('#iGain').oninput = e => setGain(e.target.value);
     $('#iGain0').onclick = () => setGain(0);
     $('#iTake').onchange = e => { (cfg().picks = cfg().picks || {})[c.sid] = e.target.value; vids.forEach(v => { v.removeAttribute('src'); v.load(); }); markDirty(); renderTimeline(); renderInspector(); seekTo(t, false); };
-    $('#iSkip').onchange = e => { const sk = new Set(cfg().skip || []); e.target.checked ? sk.add(c.sid) : sk.delete(c.sid); cfg().skip = [...sk]; markDirty(); renderTimeline(); renderInspector(); seekTo(t, false); };
+    $('#iSkip').onclick = () => setSkip(c.sid, !c.skipped);
     const setTrim = () => { const tr = trimOf(c.sid); tr.in = +$('#iIn').value || 0; tr.out = +$('#iOut').value || null; markDirty(); renderTimeline(); renderInspector(); };
     $('#iIn').onchange = $('#iOut').onchange = setTrim;
     $('#iInPh').onclick = () => { trimOf(c.sid).in = +fmt2(c.in + (t - c.start)); markDirty(); renderTimeline(); renderInspector(); };
@@ -422,7 +433,8 @@ window.addEventListener('keydown', e => {
   }
   else if (e.key === 'i' || e.key === 'I') { const c = clipAt(t); if (c) { trimOf(c.sid).in = +fmt2(c.in + (t - c.start)); markDirty(); renderTimeline(); renderInspector(); } }
   else if (e.key === 'o' || e.key === 'O') { const c = clipAt(t); if (c) { trimOf(c.sid).out = +fmt2(c.in + (t - c.start)); markDirty(); renderTimeline(); renderInspector(); } }
-  else if (e.key === 'Delete' && sel?.type === 'cap') { capsOf(sel.sid).splice(sel.i, 1); sel = null; markDirty(); renderTimeline(); renderInspector(); }
+  else if ((e.key === 'Delete' || e.key === 'Backspace') && sel?.type === 'cap') { capsOf(sel.sid).splice(sel.i, 1); sel = null; markDirty(); renderTimeline(); renderInspector(); }
+  else if ((e.key === 'Delete' || e.key === 'Backspace') && sel?.type === 'clip') { setSkip(sel.sid, !clipOf(sel.sid).skipped); }
 });
 
 // ---------- export ----------

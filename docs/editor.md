@@ -28,7 +28,8 @@ interchangeable.
 | Do | Effect |
 |---|---|
 | Click the ruler, or drag along it | Move the playhead / scrub |
-| Click a clip | Select it (inspector: take, skip, in/out, volume ±dB, prompt) |
+| Click a clip | Select it (inspector: take, remove/put back, in/out, volume ±dB, prompt) |
+| ✕ on a clip (hover), or `Delete` with a clip selected | Remove the whole clip from the cut; it moves to the grey shelf after the end, ↩ puts it back |
 | Drag a clip's **left edge** | Trim the head (`trim.in`); everything after shifts left |
 | Drag a clip's **right edge** | Trim the tail (`trim.out`) |
 | Drag a caption block | Move it (start and end together), kept inside its clip |
@@ -53,7 +54,7 @@ identically on export); a gold `+3 dB` badge on the clip block shows it is set.
 | `Space` | Play / pause |
 | `←` `→` | Nudge the selected caption by one step (header "step"); with nothing selected, move the playhead |
 | `I` / `O` | Set the current clip's in / out point at the playhead |
-| `Delete` | Delete the selected caption |
+| `Delete` / `Backspace` | Remove the selected clip from the cut, or delete the selected caption |
 
 ## Buttons
 
