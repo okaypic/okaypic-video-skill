@@ -1,0 +1,13 @@
+.env
+*.mp4
+*.png
+*.jpg
+!docs/*.jpg
+assets/fonts/
+takes/
+refs/
+captions/
+filter_*.txt
+state.json
+.okaypic_req_*.json
+__pycache__/

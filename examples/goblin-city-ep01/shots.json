@@ -1,0 +1,146 @@
+{
+  "style": "Photorealistic cinematic near-future urban drama, moody low-key lighting, shallow depth of field, subtle film grain.",
+  "seeds": [1, 2],
+  "shots": [
+    {
+      "id": "01",
+      "refs": ["victor_human", "kessler"],
+      "prompt": "Interior, a luxurious rooftop lounge at night: floor-to-ceiling glass, pink and blue neon city lights outside, a champagne tower, leather sofas. A large floating holographic news screen shows two police officers dragging a small struggling goblin across a street while a suited official speaks into microphones. The camera tilts down from the screen to the man from <Picture 1> sitting on a sofa beneath it, scrolling his phone, not looking up. Opposite him sits the bald bearded man from <Picture 2>. The official's voice from the screen, flat TV-news tone: \"A prank collective. Probably a crypto marketing stunt.\" Then the man from <Picture 1>, still staring at his phone, quick and dry: \"Goblins. Sure. How much do I buy?\" Deadpan, snappy timing."
+    },
+    {
+      "id": "02",
+      "refs": [],
+      "prompt": "Aerial establishing shot of a vast fictional near-future megacity at night. The camera glides upward: from a low district lit by orange sodium streetlights and 24-hour laundromats, past endless identical apartment towers, up into a glittering skyline of pink and blue neon, and finally settles on the tallest skyscraper in the city, whose crown is a glowing white sign. On the way it passes a giant holographic billboard of a platinum-blonde young woman holding up a phone and cheering. Ambient city hum and wind. An old, raspy, warm male narrator says, unhurried: \"Every city has a bottom. Meridian's is further down than most.\""
+    },
+    {
+      "id": "03",
+      "refs": ["victor_human", "kessler", "nadia_skin"],
+      "prompt": "The same luxurious rooftop lounge at night. At a low table the tall woman from <Picture 3> in a black satin slip dress leans over to pour champagne for two men. The man from <Picture 1> lets his eyes drift over her body; the bald bearded man from <Picture 2> keeps his calm eyes on him. As she straightens up, her gaze rests for a beat on the bearded man's mouth. The bearded man, slow and gravelly: \"Your Series B is dead, Victor. Everyone knows.\" The man from <Picture 1>, fast and defensive: \"I have two months of payroll. I'm fine.\""
+    },
+    {
+      "id": "04",
+      "refs": ["victor_human", "kessler", "nadia_skin"],
+      "prompt": "The same rooftop lounge. The bald bearded man from <Picture 2> leans forward and lowers his voice. In the background the woman from <Picture 3> collects empty glasses, her movements slowing as she listens. Bearded man, slow and gravelly, almost a whisper: \"GoblinCoin. Tomorrow, nine a.m. It moves.\" The man from <Picture 1>, skeptical: \"A meme coin?\" Bearded man: \"Don't ask me how I know.\""
+    },
+    {
+      "id": "05",
+      "refs": ["victor_human", "kessler"],
+      "prompt": "The same rooftop lounge. The bald bearded man from <Picture 2> slides a matte black card across the table. The floating holographic screen beside them switches to a rising green price chart with a small cartoon goblin logo. The man from <Picture 1> stares at the line, then laughs. Bearded man, calm: \"Nobody suspects a joke. That's the point.\" The man from <Picture 1>, grinning, fast: \"Ten x. Two million. By Friday I'm a founder again.\""
+    },
+    {
+      "id": "06",
+      "refs": ["victor_human"],
+      "prompt": "A marble restroom in a luxury club at night, warm downlights. The man from <Picture 1> walks up to a wide smart mirror; a thin line of light glows along its edge as it recognizes him. He straightens his dark red tie and stares at his own face for a long moment, breathing. A soft synthetic female voice: \"Good evening, Mr. Hale.\" He says quietly to himself, resolved: \"One trade.\" Running water and a soft chime."
+    },
+    {
+      "id": "07",
+      "refs": ["victor_human"],
+      "prompt": "Interior, a minimalist penthouse apartment late at night, cold blue light. One entire wall is a curved screen showing a green price chart. The man from <Picture 1>, in shirt sleeves and his red tie loosened, stands before it and swipes through glowing floating controls: a leverage slider, a big ALL IN button, CONFIRM. A face-scan frame pops up over his face and flashes green. A synthetic voice: \"Face verified. Position opened.\" He exhales and says, low and hungry: \"Let's go.\" A sharp electronic confirmation tone."
+    },
+    {
+      "id": "08",
+      "refs": ["victor_human", "ray"],
+      "prompt": "The front door of a penthouse apartment at night, a cold bright hallway. The door opens; the delivery rider from <Picture 2> in a neon-green jacket and black helmet with the visor up holds out a paper food bag. At the far end of the hallway a sleek futuristic scooter glows with blue light. The man from <Picture 1>, eyes on his phone, grabs the bag without looking at the rider and shuts the door in his face. The rider stands frozen. Cut to the man's phone: a rating screen, and his thumb taps a single star. The man, distracted: \"Keep the change.\" The rider, polite, with a Filipino accent: \"Sir, there's no—\" and the door slams."
+    },
+    {
+      "id": "09",
+      "refs": ["victor_human"],
+      "prompt": "The penthouse at dawn. The huge wall screen shows a price chart shooting upward, bathing the room in green. The man from <Picture 1>, barefoot, shirt untucked, stands in front of it with a glass of whisky and a phone to his ear, laughing. He says, giddy and fast: \"Tell the team payroll's fine. Tell them we're back.\" Ice clinks in the glass."
+    },
+    {
+      "id": "10",
+      "refs": ["victor_human"],
+      "prompt": "The penthouse at night; the clock in the corner of the wall screen reads 03:33. The price chart drops off a cliff and the whole wall turns red. The man from <Picture 1> stares with the phone in his hand, then slowly slides off the sofa onto the floor and sits with his back against it, the phone dropping beside his leg. No dialogue, only his breathing. A long flat alarm tone, then silence."
+    },
+    {
+      "id": "26",
+      "refs": ["victor_human", "kessler"],
+      "prompt": "The penthouse at night, the whole wall screen glowing red with a crashed price chart. The man from <Picture 1>, shirt untucked, tie pulled loose, paces furiously with his phone pressed to his ear, then stops and shouts into it. The man from <Picture 1>, furious, voice cracking: \"You said it would go up! You said nine a.m.!\" From the phone, the calm gravelly voice of the bald bearded man from <Picture 2>, slightly tinny: \"Idiot. Who told you to go ten-x?\" A click, then the dial tone. The man stares at the dead phone."
+    },
+    {
+      "id": "27",
+      "refs": ["kessler"],
+      "prompt": "Night, the back seat of a dark luxury car gliding through neon-lit streets, city lights sliding across the window. The bald bearded man from <Picture 2> sits calmly with a phone to his ear, unbothered, almost bored. He speaks slowly and gravelly: \"Idiot. Who told you to go ten-x?\" He lowers the phone, ends the call with one thumb, and looks out of the window without any expression. Soft engine hum, rain on glass."
+    },
+    {
+      "id": "28",
+      "refs": ["victor_human"],
+      "prompt": "The penthouse at night, lit only by the red glow of the crashed chart on the wall screen. The man from <Picture 1> sits on the floor with his back against the sofa, knees up, the dead phone in his hand. He talks to himself in a flat, broken whisper, then a short hollow laugh: \"I lost everything.\" A pause. \"Everything.\" He presses the heels of his hands into his eyes. Only the hum of the screen and his breathing."
+    },
+    {
+      "id": "11",
+      "refs": ["victor_human"],
+      "prompt": "The penthouse at first light, grey dawn through the windows. The man from <Picture 1>, still in his white shirt and suit trousers, lies passed out on the sofa. The camera slowly pushes in from the dim red glow of the wall screen toward his face; his fingers twitch. Through the window, the glowing crown of the city's tallest tower switches off for daytime. An old, raspy, warm male narrator: \"Nobody chooses the night it happens. It just comes for you.\" Soft air-conditioning hum."
+    },
+    {
+      "id": "12",
+      "refs": ["victor_goblin"],
+      "prompt": "A sleek penthouse bathroom in the morning. Overhead shot of a marble sink: a small grey-green wrinkled hand grips the edge. The camera tilts up to the mirror: the goblin from <Picture 1> stares at himself, a dark red tie knotted over a white dress shirt that hangs to his knees, suit trousers crumpled on the floor behind him. A thin red light pulses along the mirror's edge. A synthetic female voice: \"Face not recognized.\" The goblin, in a thin, cracking, panicked voice: \"No. No, no, no.\" The error chime repeats three times."
+    },
+    {
+      "id": "13",
+      "refs": ["victor_goblin"],
+      "prompt": "The minimalist penthouse in daylight. The goblin from <Picture 1> runs across the room, the long white shirt tangling his legs, and slaps at the front door's face scanner: a red light. He tries the coffee machine: red light. On the wall screen a video call pops up, a young concierge in a uniform. Concierge, polite and nervous: \"Mr. Hale? There's an unregistered individual in your unit.\" The goblin shouts back in a thin cracking voice: \"It's me! It's—\" then looks at his own hand and freezes."
+    },
+    {
+      "id": "14",
+      "refs": ["victor_goblin"],
+      "prompt": "A grand marble residential lobby in daylight. Elevator doors open and the goblin from <Picture 1> rushes out with a navy suit jacket draped over his shoulders like a cape, dragging on the floor. A young receptionist looks up and screams, grabbing a phone. Two security guards burst out of a side door. The goblin veers into a fire-exit stairwell. Receptionist, screaming: \"It's one of those prank people! Call the police!\" Running leather shoes and a fire door slamming."
+    },
+    {
+      "id": "15",
+      "refs": ["victor_goblin"],
+      "prompt": "A narrow back alley behind luxury towers in daylight: wet pavement, steam, metal dumpsters. The goblin from <Picture 1> climbs into a dumpster and peers out with only his eyes showing. Blue police lights sweep across the mouth of the alley. On the ground a single copper coin catches the light. His small grey-green hand reaches out and picks it up. Close-up: the coin resting in his palm beside a loose gold wristwatch. No dialogue. Distant sirens, dripping water."
+    },
+    {
+      "id": "16",
+      "refs": ["victor_goblin"],
+      "prompt": "The same back alley in daylight. The goblin from <Picture 1> crouches in the dumpster clutching a coin and stares across the alley. A manhole cover in the middle of the alley silently lifts a crack, and a pair of reflective eyes glint in the gap. The cover settles back down. The goblin shrinks back. No dialogue. A soft scrape of iron, dripping water."
+    },
+    {
+      "id": "17",
+      "refs": ["victor_goblin", "gil"],
+      "prompt": "The same back alley at night under orange sodium lamps. The goblin from <Picture 1> shivers in the dumpster with the suit jacket wrapped around him. The manhole cover lifts fully and the old goblin from <Picture 2>, in a green doorman's coat with brass buttons, pushes his head and shoulders up into the light and grins. Old goblin, raspy, warm, amused: \"You'll freeze in that jacket, Your Excellency.\" The goblin from <Picture 1>, thin and scared: \"Who are you?\" Old goblin: \"The doorman. Down here's warmer. Bring the coin.\""
+    },
+    {
+      "id": "18",
+      "refs": ["victor_goblin", "gil"],
+      "prompt": "An underground brick vault lit by hundreds of candles. An iron ladder comes down from a manhole. Under the arches a row of newly arrived goblins sit wrapped in towels and oversized shirts; an old goblin seamstress works at a sewing machine, cutting down a human hoodie. The old doorman goblin from <Picture 2> leads the goblin from <Picture 1> past them. Doorman, raspy, warm: \"New skin. Everybody starts here.\" The goblin from <Picture 1>: \"Everybody?\" Doorman: \"Everybody who got forgotten.\" Sewing machine, murmurs, candle flicker."
+    },
+    {
+      "id": "19",
+      "refs": ["victor_goblin"],
+      "prompt": "The candlelit brick vault. An old goblin seamstress with spectacles stops the goblin from <Picture 1>, pinches the hem of his trailing navy suit jacket and squints at the stitching. Seamstress, an old woman's croaky voice: \"Lovely cut. I'll have it your size by morning.\" The goblin from <Picture 1>, offended: \"It's bespoke.\" Seamstress, dry: \"It is now.\" Snappy comedic timing."
+    },
+    {
+      "id": "20",
+      "refs": ["victor_goblin", "gil"],
+      "prompt": "A vast underground market under brick arches, lit by candles and lanterns: dozens of stalls hung with bunches of keys, single socks, earbuds, phone cases and rings; goblin vendors haggle with goblin customers; the price tags are little drawings of copper coins. The old doorman goblin from <Picture 2> leads the goblin from <Picture 1> through the crowd. Doorman, raspy, amused: \"Everything you people drop ends up here. Keys. Socks. Founders.\""
+    },
+    {
+      "id": "21",
+      "refs": ["victor_goblin"],
+      "prompt": "The candlelit underground market. A stocky goblin vendor tends a steaming pot at a stall. The goblin from <Picture 1> places a single copper coin on the counter. The vendor picks it up, bites it, glances at the customer's red tie and gold watch, and pushes a steaming tin cup toward him. Vendor, gruff: \"First coin?\" The goblin from <Picture 1>, quietly: \"First... anything.\""
+    },
+    {
+      "id": "22",
+      "refs": ["victor_goblin"],
+      "prompt": "The candlelit underground market. A roar of cheering. A crowd of goblins surrounds a large chalkboard; a thin goblin accountant standing on a stool writes big numbers on it in chalk. As he finishes, the whole crowd hurls copper coins into the air and they rain down. The goblin from <Picture 1> stands at the edge of the crowd holding a steaming tin cup, bewildered. The crowd chants in rhythm: \"Tide! Tide! Tide!\" Coins clatter like rain."
+    },
+    {
+      "id": "23",
+      "refs": ["victor_goblin", "gil"],
+      "prompt": "The candlelit market with coins still raining down. The old doorman goblin from <Picture 2> steps up beside the goblin from <Picture 1>, lays a hand on his shoulder and raises a tin cup. The goblin from <Picture 1> slowly turns from the cheering crowd at the chalkboard to the doorman; his face goes from confusion to understanding, and the cup slips from his hand. Doorman, raspy, warm: \"Welcome. Drinks are on you.\" The goblin from <Picture 1>, hollow: \"That was... you?\""
+    },
+    {
+      "id": "24",
+      "refs": ["victor_goblin", "gil"],
+      "prompt": "The same candlelit market. The old doorman goblin from <Picture 2> shrugs and watches the celebrating crowd with a tender expression. A copper coin lands on the gold watch on the wrist of the goblin from <Picture 1>. Doorman, raspy, gentle: \"Tide comes in, tide goes out. Somebody always gets wet.\" The goblin from <Picture 1>, numb: \"Two million dollars.\" Doorman: \"Two million coins. Welcome home.\""
+    },
+    {
+      "id": "25",
+      "refs": ["victor_goblin"],
+      "prompt": "The goblin from <Picture 1> stands alone in the candlelit underground market and looks up. High above, an iron grate in the brick ceiling, and far beyond it, through the grate, the glowing crown of the city's tallest tower against the night sky. The camera pushes from his face up through the grate and settles on that distant light. The celebration fades away. An old, raspy, warm male narrator: \"Tomorrow the Crown wakes up, and nobody remembers Victor Hale.\" A beat. \"Down here, we remember everyone.\" A single drip of water."
+    }
+  ]
+}

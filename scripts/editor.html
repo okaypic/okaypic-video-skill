@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>okaypic editor</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #141210; color: #e8e2d6; }
+  header { position: sticky; top: 0; z-index: 5; background: #1f1a14; border-bottom: 1px solid #3a3128; padding: 10px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0 12px 0 0; color: #f5c542; }
+  button { background: #2c2520; color: #e8e2d6; border: 1px solid #4a3f33; border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; }
+  button:hover { background: #3a3128; }
+  button.primary { background: #f5c542; color: #1a1108; border-color: #f5c542; font-weight: 600; }
+  button.small { padding: 1px 6px; font-size: 12px; }
+  select, input[type=number], input[type=text], textarea { background: #0f0d0b; color: #e8e2d6; border: 1px solid #4a3f33; border-radius: 4px; padding: 3px 6px; font: inherit; }
+  input[type=number] { width: 68px; }
+  main { padding: 12px 16px 60px; display: flex; flex-direction: column; gap: 12px; }
+  .shot { display: grid; grid-template-columns: 480px 1fr; gap: 14px; background: #1b1713; border: 1px solid #332b23; border-radius: 10px; padding: 12px; }
+  .shot.skipped { opacity: .45; }
+  .vid { position: relative; }
+  video { width: 480px; height: 270px; background: #000; border-radius: 6px; display: block; }
+  .overlay { position: absolute; left: 0; right: 0; bottom: 28px; text-align: center; pointer-events: none; padding: 0 12px; }
+  .overlay span { display: inline-block; background: rgba(0,0,0,.75); color: #fff; font-weight: 700; font-size: 15px; padding: 2px 8px; border-radius: 4px; white-space: pre-wrap; }
+  .head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+  .head b { font-size: 15px; color: #f5c542; }
+  .prompt { color: #9a8f80; font-size: 12px; max-height: 3.6em; overflow: auto; margin: 4px 0 8px; }
+  .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: 3px 4px; vertical-align: top; }
+  td.t { white-space: nowrap; }
+  textarea { width: 100%; min-height: 36px; resize: vertical; box-sizing: border-box; }
+  .muted { color: #9a8f80; font-size: 12px; }
+  #log { font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; background: #0f0d0b; border: 1px solid #332b23; border-radius: 6px; padding: 8px; max-height: 160px; overflow: auto; margin: 0 16px; }
+  a { color: #f5c542; }
+  .pill { background: #2c2520; border-radius: 10px; padding: 1px 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">okaypic editor</h1>
+  <label>preview captions <select id="lang"><option value="en">en</option><option value="zh">zh</option></select></label>
+  <label>caption nudge step <input type="number" id="step" value="0.2" step="0.1" min="0.05" style="width:56px"></label>
+  <span id="saved" class="pill">saved</span>
+  <span style="flex:1"></span>
+  <button id="exportEn" class="primary">Export EN</button>
+  <button id="exportZh" class="primary">Export ZH</button>
+  <button id="exportBoth">Export both</button>
+  <span id="exportState" class="muted"></span>
+</header>
+<div id="log" hidden></div>
+<main id="shots"></main>
+<script>
+let P = null;          // project: {ep, shots, edit}
+let saveTimer = null;
+const $ = (s, r = document) => r.querySelector(s);
+const fmt = (x) => (Math.round(x * 100) / 100).toFixed(2);
+
+function cfg() { return P.edit; }
+function captions(sid) { const c = cfg().captions = cfg().captions || {}; return (c[sid] = c[sid] || []); }
+function trim(sid) { const t = cfg().trim = cfg().trim || {}; return (t[sid] = t[sid] || {}); }
+function pick(sid) { return (cfg().picks || {})[sid] || 'a'; }
+
+function markDirty() {
+  $('#saved').textContent = 'saving…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 600);
+}
+async function save() {
+  await fetch('/api/save', { method: 'POST', body: JSON.stringify(cfg()) });
+  $('#saved').textContent = 'saved';
+}
+
+async function load() {
+  P = await (await fetch('/api/project')).json();
+  $('#title').textContent = `okaypic editor · ${P.ep}`;
+  const main = $('#shots');
+  main.innerHTML = '';
+  for (const s of P.shots) main.appendChild(shotCard(s));
+}
+
+function shotCard(s) {
+  const sid = s.id;
+  const el = document.createElement('section');
+  el.className = 'shot' + ((cfg().skip || []).includes(sid) ? ' skipped' : '');
+  el.dataset.sid = sid;
+  const take = pick(sid);
+  const dur = s.durations[take] || 0;
+  el.innerHTML = `
+    <div class="vid">
+      <video preload="none" controls poster="/poster/${sid}_${take}.jpg" src="/takes/${sid}_${take}.mp4"></video>
+      <div class="overlay"><span hidden></span></div>
+      <div class="row muted"><span>playhead <b class="ph">0.00</b> s · take length ${fmt(dur)} s</span></div>
+    </div>
+    <div>
+      <div class="head">
+        <b>Shot ${sid}</b>
+        <label>take <select class="take">${s.takes.map(t => `<option ${t === take ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+        <label><input type="checkbox" class="skip" ${(cfg().skip || []).includes(sid) ? 'checked' : ''}> skip</label>
+        <span class="muted">refs: ${s.refs.join(', ') || '—'}</span>
+      </div>
+      <div class="prompt">${s.prompt.replace(/</g, '&lt;')}</div>
+      <div class="row">
+        <span>trim</span>
+        <label>in <input type="number" class="tin" step="0.1" min="0" value="${trim(sid).in ?? 0}"></label>
+        <button class="small setin">◀ set in from playhead</button>
+        <label>out <input type="number" class="tout" step="0.1" min="0" placeholder="${fmt(dur)}" value="${trim(sid).out ?? ''}"></label>
+        <button class="small setout">set out from playhead ▶</button>
+        <button class="small cleartrim">clear</button>
+      </div>
+      <div class="row">
+        <span>captions</span>
+        <button class="small shiftall" data-d="-1">◀ all −step</button>
+        <button class="small shiftall" data-d="1">all +step ▶</button>
+        <button class="small autotime">auto-time from audio</button>
+        <button class="small addcap">+ add</button>
+      </div>
+      <table class="caps"></table>
+    </div>`;
+  const video = $('video', el);
+  const overlay = $('.overlay span', el);
+  video.addEventListener('timeupdate', () => {
+    $('.ph', el).textContent = fmt(video.currentTime);
+    const lang = $('#lang').value;
+    const c = captions(sid).find(c => video.currentTime >= c.start && video.currentTime < c.end && (c[lang] || '').trim());
+    overlay.hidden = !c;
+    overlay.textContent = c ? c[lang] : '';
+  });
+  $('.take', el).onchange = (e) => { (cfg().picks = cfg().picks || {})[sid] = e.target.value; video.poster = `/poster/${sid}_${e.target.value}.jpg`; video.src = `/takes/${sid}_${e.target.value}.mp4`; markDirty(); };
+  $('.skip', el).onchange = (e) => { const sk = new Set(cfg().skip || []); e.target.checked ? sk.add(sid) : sk.delete(sid); cfg().skip = [...sk]; el.classList.toggle('skipped', e.target.checked); markDirty(); };
+  const tin = $('.tin', el), tout = $('.tout', el);
+  const setTrim = () => { trim(sid).in = parseFloat(tin.value) || 0; trim(sid).out = tout.value === '' ? null : parseFloat(tout.value); markDirty(); };
+  tin.onchange = tout.onchange = setTrim;
+  $('.setin', el).onclick = () => { tin.value = fmt(video.currentTime); setTrim(); };
+  $('.setout', el).onclick = () => { tout.value = fmt(video.currentTime); setTrim(); };
+  $('.cleartrim', el).onclick = () => { tin.value = 0; tout.value = ''; setTrim(); };
+  for (const b of el.querySelectorAll('.shiftall')) b.onclick = () => {
+    const d = parseFloat($('#step').value) * parseInt(b.dataset.d);
+    for (const c of captions(sid)) { c.start = Math.max(0, c.start + d); c.end = Math.max(c.start + 0.1, c.end + d); }
+    renderCaps(el, s); markDirty();
+  };
+  $('.autotime', el).onclick = async () => {
+    const r = await (await fetch('/api/autotime', { method: 'POST', body: JSON.stringify({ shot: sid, take: pick(sid) }) })).json();
+    const old = captions(sid);
+    // keep translations the user already wrote for the same English line
+    for (const c of r.captions) { const o = old.find(x => x.en === c.en); if (o) c.zh = o.zh; }
+    cfg().captions[sid] = r.captions; renderCaps(el, s); markDirty();
+  };
+  $('.addcap', el).onclick = () => { captions(sid).push({ start: Math.round(video.currentTime * 100) / 100, end: Math.round(video.currentTime * 100) / 100 + 2, en: '', zh: '' }); renderCaps(el, s); markDirty(); };
+  renderCaps(el, s);
+  return el;
+}
+
+function renderCaps(el, s) {
+  const sid = s.id, video = $('video', el), table = $('.caps', el);
+  table.innerHTML = '';
+  captions(sid).forEach((c, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="t">
+        <button class="small play" title="play from start">▶</button>
+        <input type="number" class="cs" step="0.1" value="${fmt(c.start)}"> – <input type="number" class="ce" step="0.1" value="${fmt(c.end)}"><br>
+        <button class="small nudge" data-d="-1">◀</button><button class="small nudge" data-d="1">▶</button>
+        <button class="small fromph" data-k="start">start=ph</button><button class="small fromph" data-k="end">end=ph</button>
+        <button class="small del" title="delete">✕</button>
+      </td>
+      <td><textarea class="en" placeholder="English">${c.en || ''}</textarea></td>
+      <td><textarea class="zh" placeholder="中文">${c.zh || ''}</textarea></td>`;
+    const cs = $('.cs', tr), ce = $('.ce', tr);
+    const upd = () => { c.start = parseFloat(cs.value) || 0; c.end = parseFloat(ce.value) || 0; markDirty(); };
+    cs.onchange = ce.onchange = upd;
+    $('.en', tr).oninput = (e) => { c.en = e.target.value; markDirty(); };
+    $('.zh', tr).oninput = (e) => { c.zh = e.target.value; markDirty(); };
+    $('.play', tr).onclick = () => { video.currentTime = c.start; video.play(); };
+    for (const b of tr.querySelectorAll('.nudge')) b.onclick = () => {
+      const d = parseFloat($('#step').value) * parseInt(b.dataset.d);
+      c.start = Math.max(0, Math.round((c.start + d) * 100) / 100); c.end = Math.max(c.start + 0.1, Math.round((c.end + d) * 100) / 100);
+      cs.value = fmt(c.start); ce.value = fmt(c.end); markDirty();
+    };
+    for (const b of tr.querySelectorAll('.fromph')) b.onclick = () => {
+      c[b.dataset.k] = Math.round(video.currentTime * 100) / 100;
+      if (c.end <= c.start) c.end = c.start + 0.5;
+      cs.value = fmt(c.start); ce.value = fmt(c.end); markDirty();
+    };
+    $('.del', tr).onclick = () => { captions(sid).splice(i, 1); renderCaps(el, s); markDirty(); };
+    table.appendChild(tr);
+  });
+}
+
+async function exportLang(langs) {
+  await save();
+  const log = $('#log'); log.hidden = false; log.textContent = '';
+  for (const lang of langs) {
+    const r = await (await fetch('/api/export', { method: 'POST', body: JSON.stringify({ lang }) })).json();
+    if (!r.ok) { log.textContent += `\n${r.error}`; return; }
+    $('#exportState').textContent = `exporting ${lang}…`;
+    let st;
+    do {
+      await new Promise(r => setTimeout(r, 2000));
+      st = await (await fetch('/api/status')).json();
+      log.textContent = st.log.join('\n');
+      log.scrollTop = log.scrollHeight;
+    } while (st.running);
+    const done = st.log.find(l => l.startsWith('done '));
+    if (done) {
+      const file = done.slice(5).trim();
+      log.innerHTML += `\n<a href="/out/${file}" target="_blank">open ${file}</a>`;
+    }
+  }
+  $('#exportState').textContent = 'export finished';
+}
+$('#exportEn').onclick = () => exportLang(['en']);
+$('#exportZh').onclick = () => exportLang(['zh']);
+$('#exportBoth').onclick = () => exportLang(['en', 'zh']);
+load();
+</script>
+</body>
+</html>

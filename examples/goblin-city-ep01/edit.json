@@ -1,0 +1,385 @@
+{
+ "output": "goblin_city_ep01",
+ "fonts": {
+  "en": "fonts/NotoSans-Bold.ttf",
+  "zh": "fonts/NotoSansSC-Bold.otf"
+ },
+ "picks": {
+  "01": "b",
+  "02": "a",
+  "03": "a",
+  "04": "a",
+  "05": "b",
+  "06": "a",
+  "07": "a",
+  "08": "a",
+  "09": "a",
+  "10": "a",
+  "11": "a",
+  "12": "a",
+  "13": "a",
+  "14": "a",
+  "15": "a",
+  "16": "b",
+  "17": "a",
+  "18": "a",
+  "19": "a",
+  "20": "a",
+  "21": "a",
+  "22": "a",
+  "23": "a",
+  "24": "a",
+  "25": "a",
+  "26": "a",
+  "27": "a",
+  "28": "a"
+ },
+ "endcard": {
+  "title": "GOBLIN CITY",
+  "sub": "Episode 1 - The Liquidation",
+  "price": "Made with okaypic.com - MiniMax H3 video from $0.007 per second"
+ },
+ "captions": {
+  "01": [
+   {
+    "start": 0.0,
+    "end": 6.28,
+    "en": "A prank collective. Probably a crypto marketing stunt.",
+    "zh": "一个恶作剧团伙。多半是某个加密货币的营销噱头。"
+   },
+   {
+    "start": 6.28,
+    "end": 10.12,
+    "en": "Goblins. Sure. How much do I buy?",
+    "zh": "哥布林？行啊。我该买多少？"
+   }
+  ],
+  "02": [
+   {
+    "start": 0.0,
+    "end": 10.12,
+    "en": "Every city has a bottom. Meridian's is further down than most.",
+    "zh": "每座城市都有底。子午城的底，比别处更深。"
+   }
+  ],
+  "03": [
+   {
+    "start": 0.0,
+    "end": 4.39,
+    "en": "Your Series B is dead, Victor. Everyone knows.",
+    "zh": "你的 B 轮已经死了，Victor。谁都知道。"
+   },
+   {
+    "start": 4.99,
+    "end": 10.12,
+    "en": "I have two months of payroll. I'm fine.",
+    "zh": "我还有两个月的工资。我没事。"
+   }
+  ],
+  "04": [
+   {
+    "start": 0.0,
+    "end": 5.39,
+    "en": "GoblinCoin. Tomorrow, nine a.m. It moves.",
+    "zh": "哥布林币。明天早上九点，它会动。"
+   },
+   {
+    "start": 5.39,
+    "end": 6.97,
+    "en": "A meme coin?",
+    "zh": "一个 meme 币？"
+   },
+   {
+    "start": 6.97,
+    "end": 10.12,
+    "en": "Don't ask me how I know.",
+    "zh": "别问我怎么知道的。"
+   }
+  ],
+  "05": [
+   {
+    "start": 2.0,
+    "end": 5.66,
+    "en": "Nobody suspects a joke. That's the point.",
+    "zh": "没人会怀疑一个笑话。这就是关键。"
+   },
+   {
+    "start": 5.66,
+    "end": 10.12,
+    "en": "Ten x. Two million. By Friday I'm a founder again.",
+    "zh": "十倍杠杆。两百万。周五之前我又是创始人了。"
+   }
+  ],
+  "06": [
+   {
+    "start": 5.19,
+    "end": 7.49,
+    "en": "Good evening, Mr. Hale.",
+    "zh": "晚上好，Hale 先生。"
+   },
+   {
+    "start": 9.4,
+    "end": 10.12,
+    "en": "One trade.",
+    "zh": "就这一把。"
+   }
+  ],
+  "07": [
+   {
+    "start": 0.0,
+    "end": 7.85,
+    "en": "Face verified. Position opened.",
+    "zh": "人脸验证通过。仓位已开。"
+   },
+   {
+    "start": 7.85,
+    "end": 10.12,
+    "en": "Let's go.",
+    "zh": "上。"
+   }
+  ],
+  "08": [
+   {
+    "start": 0.0,
+    "end": 5.06,
+    "en": "Keep the change.",
+    "zh": "不用找了。"
+   },
+   {
+    "start": 5.06,
+    "end": 10.12,
+    "en": "Sir, there's no—",
+    "zh": "先生，没有零——"
+   }
+  ],
+  "09": [
+   {
+    "start": 0.0,
+    "end": 10.12,
+    "en": "Tell the team payroll's fine. Tell them we're back.",
+    "zh": "告诉团队，工资没问题。告诉他们，我们回来了。"
+   }
+  ],
+  "10": [],
+  "26": [
+   {
+    "start": 2.11,
+    "end": 6.75,
+    "en": "You said it would go up! You said nine a.m.!",
+    "zh": "你说它会涨的！你说早上九点！"
+   },
+   {
+    "start": 6.75,
+    "end": 10.12,
+    "en": "Idiot. Who told you to go ten-x?",
+    "zh": "蠢货。谁让你开十倍杠杆的？"
+   }
+  ],
+  "27": [
+   {
+    "start": 1.13,
+    "end": 10.12,
+    "en": "Idiot. Who told you to go ten-x?",
+    "zh": "蠢货。谁让你开十倍杠杆的？"
+   }
+  ],
+  "28": [
+   {
+    "start": 3.14,
+    "end": 5.88,
+    "en": "I lost everything.",
+    "zh": "我什么都没了。"
+   },
+   {
+    "start": 5.88,
+    "end": 7.56,
+    "en": "Everything.",
+    "zh": "什么都没了。"
+   }
+  ],
+  "11": [
+   {
+    "start": 3.2,
+    "end": 8.96,
+    "en": "Nobody chooses the night it happens. It just comes for you.",
+    "zh": "没人能选择那一夜什么时候来。它只会来找你。"
+   }
+  ],
+  "12": [
+   {
+    "start": 0.0,
+    "end": 5.79,
+    "en": "Face not recognized.",
+    "zh": "人脸无法识别。"
+   },
+   {
+    "start": 5.79,
+    "end": 10.12,
+    "en": "No. No, no, no.",
+    "zh": "不。不不不。"
+   }
+  ],
+  "13": [
+   {
+    "start": 0.0,
+    "end": 7.73,
+    "en": "Mr. Hale? There's an unregistered individual in your unit.",
+    "zh": "Hale 先生？您的房间里有一个未登记人员。"
+   },
+   {
+    "start": 7.73,
+    "end": 9.6,
+    "en": "It's me! It's—",
+    "zh": "是我！是——"
+   }
+  ],
+  "14": [
+   {
+    "start": 0.0,
+    "end": 10.12,
+    "en": "It's one of those prank people! Call the police!",
+    "zh": "是那帮搞恶作剧的！快报警！"
+   }
+  ],
+  "15": [],
+  "16": [],
+  "17": [
+   {
+    "start": 0.0,
+    "end": 4.39,
+    "en": "You'll freeze in that jacket, Your Excellency.",
+    "zh": "穿这件外套会冻死的，阁下。"
+   },
+   {
+    "start": 4.39,
+    "end": 5.54,
+    "en": "Who are you?",
+    "zh": "你是谁？"
+   },
+   {
+    "start": 5.54,
+    "end": 10.12,
+    "en": "The doorman. Down here's warmer. Bring the coin.",
+    "zh": "门房。下面暖和。带上那枚硬币。"
+   }
+  ],
+  "18": [
+   {
+    "start": 1.15,
+    "end": 5.09,
+    "en": "New skin. Everybody starts here.",
+    "zh": "新皮区。每个人都从这里开始。"
+   },
+   {
+    "start": 5.09,
+    "end": 6.32,
+    "en": "Everybody?",
+    "zh": "每个人？"
+   },
+   {
+    "start": 6.32,
+    "end": 9.77,
+    "en": "Everybody who got forgotten.",
+    "zh": "每个被遗忘的人。"
+   }
+  ],
+  "19": [
+   {
+    "start": 0.47,
+    "end": 6.53,
+    "en": "Lovely cut. I'll have it your size by morning.",
+    "zh": "剪裁真好。天亮前我给你改成合身的。"
+   },
+   {
+    "start": 6.53,
+    "end": 8.24,
+    "en": "It's bespoke.",
+    "zh": "这是高定。"
+   },
+   {
+    "start": 8.24,
+    "end": 9.56,
+    "en": "It is now.",
+    "zh": "现在是了。"
+   }
+  ],
+  "20": [
+   {
+    "start": 0.0,
+    "end": 10.12,
+    "en": "Everything you people drop ends up here. Keys. Socks. Founders.",
+    "zh": "你们掉的东西最后都在这儿。钥匙。袜子。创始人。"
+   }
+  ],
+  "21": [
+   {
+    "start": 0.0,
+    "end": 3.51,
+    "en": "First coin?",
+    "zh": "第一枚硬币？"
+   },
+   {
+    "start": 3.51,
+    "end": 9.25,
+    "en": "First... anything.",
+    "zh": "第一枚……什么都是第一次。"
+   }
+  ],
+  "22": [
+   {
+    "start": 0.0,
+    "end": 10.12,
+    "en": "Tide! Tide! Tide!",
+    "zh": "涨潮！涨潮！涨潮！"
+   }
+  ],
+  "23": [
+   {
+    "start": 0.0,
+    "end": 6.22,
+    "en": "Welcome. Drinks are on you.",
+    "zh": "欢迎。这顿酒你请。"
+   },
+   {
+    "start": 6.22,
+    "end": 9.91,
+    "en": "That was... you?",
+    "zh": "那是……你们干的？"
+   }
+  ],
+  "24": [
+   {
+    "start": 0.38,
+    "end": 5.39,
+    "en": "Tide comes in, tide goes out. Somebody always gets wet.",
+    "zh": "潮水涨，潮水落。总有人要淋湿。"
+   },
+   {
+    "start": 5.39,
+    "end": 7.21,
+    "en": "Two million dollars.",
+    "zh": "两百万美元。"
+   },
+   {
+    "start": 7.21,
+    "end": 10.12,
+    "en": "Two million coins. Welcome home.",
+    "zh": "两百万枚铜币。欢迎回家。"
+   }
+  ],
+  "25": [
+   {
+    "start": 0.0,
+    "end": 6.68,
+    "en": "Tomorrow the Crown wakes up, and nobody remembers Victor Hale.",
+    "zh": "明天顶层醒来，没有人记得 Victor Hale。"
+   },
+   {
+    "start": 6.68,
+    "end": 10.12,
+    "en": "Down here, we remember everyone.",
+    "zh": "在下面，我们记得每一个人。"
+   }
+  ]
+ }
+}

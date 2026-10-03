@@ -1,0 +1,35 @@
+{
+  "style": "a grounded cinematic live-action style, low-key warm practical lighting, shallow depth of field, subtle film grain",
+  "cast": {
+    "victor_human": {
+      "look": "a white man of 32, tall and slim, a thick mop of dark brown curly hair, pale skin, strong dark brows, straight nose, sharp cheekbones, clean-shaven, a serious slightly sullen expression, wearing a slim-cut bespoke navy suit, crisp white shirt, dark red silk tie, black oxford shoes and a gold luxury wristwatch",
+      "height_cm": 186,
+      "build": "slim"
+    },
+    "victor_goblin": {
+      "look": "a goblin, hunched and wiry, grey-green wrinkled skin, huge pointed ears, long nose, big pale eyes, thin needle-like teeth, a messy tuft of dark brown curls on top of his head between the ears, wearing a dark red silk tie knotted over a white dress shirt that hangs down to his knees, a navy suit jacket draped over his shoulders like a cape trailing on the floor, bare feet, and a gold luxury wristwatch hanging loose on his thin wrist",
+      "height_cm": 120,
+      "build": "slim"
+    },
+    "kessler": {
+      "look": "a white man of 58 with an olive Mediterranean complexion, completely bald head, a thick well-groomed grey beard, round tortoiseshell glasses, heavy-lidded calm eyes, wearing a black cashmere turtleneck under a long charcoal overcoat, dark trousers, brown leather loafers and a plain steel wristwatch",
+      "height_cm": 175,
+      "build": "sturdy"
+    },
+    "nadia_skin": {
+      "look": "an Eastern European white woman of 30, long straight black hair, pale skin, high cheekbones, bold red lipstick, a small beauty mark beside her lips, wearing an elegant black satin slip dress, small gold hoop earrings and black high-heeled sandals",
+      "height_cm": 175,
+      "build": "slim"
+    },
+    "ray": {
+      "look": "a Filipino man of 33, short black hair flattened by a helmet, tired kind brown eyes, a black sun tattoo on his right forearm, wearing a reflective neon-green delivery jacket over a grey t-shirt, dark cargo pants, worn sneakers, a sleek matte-black rider helmet with the visor pushed up, and the strap of an insulated delivery bag across his chest",
+      "height_cm": 170,
+      "build": "average"
+    },
+    "gil": {
+      "look": "an old goblin, hunched, deeply wrinkled grey-green skin, huge pointed ears, long nose, thin teeth, warm brown human eyes and a kind sly smile, wearing a dark green hotel doorman's coat with brass buttons and gold braid cut down to his size, a matching pillbox cap, and small worn leather boots",
+      "height_cm": 115,
+      "build": "slim"
+    }
+  }
+}
