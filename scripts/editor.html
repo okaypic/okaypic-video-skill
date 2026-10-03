@@ -434,7 +434,13 @@ async function exportLang(langs) {
     if (!r.ok) { log.textContent += `\n${r.error}`; return; }
     $('#exportState').textContent = `exporting ${lang}…`;
     let st;
-    do { await new Promise(r => setTimeout(r, 2000)); st = await (await fetch('/api/status')).json(); log.textContent = st.log.join('\n'); log.scrollTop = log.scrollHeight; } while (st.running);
+    do {
+      await new Promise(r => setTimeout(r, 2000));
+      st = await (await fetch('/api/status')).json();
+      log.textContent = st.log.join('\n'); log.scrollTop = log.scrollHeight;
+      const p = [...st.log].reverse().find(l => l.startsWith('progress'));
+      $('#exportState').textContent = `exporting ${lang}… ${p ? p.slice(9) : ''}`;
+    } while (st.running);
     const done = st.log.find(l => l.startsWith('done '));
     if (done) { const file = done.slice(5).trim(); log.innerHTML += `\n<a href="/out/${file}" target="_blank">open ${file}</a>`; }
   }

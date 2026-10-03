@@ -268,17 +268,32 @@ def render(ep_dir, lang="en", log=print):
             f.write(f"{a:7.1f} {b:7.1f}  {sid}  {text}\n")
 
     out = f"{cfg.get('output') or os.path.basename(ep_dir)}_{lang}.mp4"
-    cmd = ["ffmpeg", "-y", "-loglevel", "error"]
+    part = out + ".part.mp4"  # render here, rename when complete: nobody opens a half-written file
+    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-nostats", "-progress", "pipe:1"]
     for rel in inputs:
         cmd += ["-i", rel]
     cmd += ["-filter_complex_script", f"filter_{lang}.txt", "-map", "[v]", "-map", "[an]",
             "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p",
-            "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", out]
+            "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", part]
     log(f"rendering {out}: {n} clips, ~{t0:.0f}s")
-    r = subprocess.run(cmd, cwd=ep_dir, capture_output=True, text=True)
-    if r.returncode != 0:
-        log(r.stderr[-2000:])
+    proc = subprocess.Popen(cmd, cwd=ep_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    last = -1
+    for line in proc.stdout:
+        if line.startswith("out_time_us=") and t0 > 0:
+            try:
+                pct = min(99, int(int(line.split("=")[1]) / 1e6 / t0 * 100))
+            except ValueError:
+                continue
+            if pct >= last + 5:
+                last = pct
+                log(f"progress {pct}%")
+    err = proc.stderr.read()
+    if proc.wait() != 0:
+        if os.path.exists(os.path.join(ep_dir, part)):
+            os.remove(os.path.join(ep_dir, part))
+        log(err[-2000:])
         raise SystemExit("ffmpeg failed")
+    os.replace(os.path.join(ep_dir, part), os.path.join(ep_dir, out))
     log(f"done {out}")
     return os.path.join(ep_dir, out)
 

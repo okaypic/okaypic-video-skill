@@ -69,8 +69,16 @@ def project():
 def run_export(lang):
     st = STATE["export"]
     st.update(running=True, log=[], lang=lang)
+
+    def log(m):
+        m = str(m)
+        if m.startswith("progress") and st["log"] and st["log"][-1].startswith("progress"):
+            st["log"][-1] = m  # one live progress line instead of twenty
+        else:
+            st["log"].append(m)
+
     try:
-        editlib.render(STATE["ep_dir"], lang, log=lambda m: st["log"].append(str(m)))
+        editlib.render(STATE["ep_dir"], lang, log=log)
     except BaseException as e:  # SystemExit from edit.py included
         st["log"].append(f"ERROR: {e}")
     finally:
