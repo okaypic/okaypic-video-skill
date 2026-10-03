@@ -7,43 +7,65 @@ python scripts/editor.py ep01 --port 9000 --no-browser
 
 Python standard library only (http.server); the page is `scripts/editor.html`. It reads
 `shots.json` and `edit.json`, fills missing caption timings from the audio on first load, and
-saves every change back to `edit.json` about half a second after you stop typing (the "saved"
-pill in the header tells you).
+saves every change back to `edit.json` half a second after you stop (the "saved" pill in the
+header tells you). `edit.py` renders from the same file, so UI and command line are
+interchangeable.
 
-## Header
+![editor](editor.jpg)
 
-- **preview captions** — which language the overlay on the videos shows (en / zh).
-- **caption nudge step** — seconds moved by every ◀ ▶ button (default 0.2).
-- **Export EN / Export ZH / Export both** — saves, then renders `<output>_<lang>.mp4` in the
-  background. The log appears under the header; when it says `done …` a link opens the file.
+## Layout
 
-## Per shot
+- **Preview** (top left): the whole programme plays as one sequence — clips switch automatically
+  at their trim points, the caption overlay shows the active line in the chosen language. The
+  timecode is programme time; the grey text shows which shot/take and the time inside that take.
+- **Inspector** (top right): details of whatever is selected in the timeline.
+- **Timeline** (bottom): a ruler, one **clip track** (filmstrip of each take), an **EN caption
+  track** and a **ZH caption track**. Skipped shots sit greyed out after the end of the programme
+  so they can be brought back.
 
-- **take** — which take file to use (`takes/<shot>_<take>.mp4`). The video reloads so you can
-  compare takes by ear immediately.
-- **skip** — leave this shot out of the cut.
-- **trim in / out** — seconds inside the take. Type them, or scrub the video to the moment and
-  press *set in from playhead* / *set out from playhead*. *clear* resets. Captions keep their
-  times (they are relative to the untrimmed take); anything trimmed away is simply not shown.
-- **captions**
-  - *◀ all −step / all +step ▶* shift every caption of the shot (use when the whole clip's
-    dialogue starts earlier or later than guessed).
-  - *auto-time from audio* re-runs the silence detection for the current take and keeps the
-    Chinese text you already wrote for identical English lines.
-  - *+ add* inserts a caption at the playhead.
-  - Per line: ▶ plays from the caption start; start–end fields; ◀ ▶ nudge both by one step;
-    *start=ph* / *end=ph* set a boundary from the playhead; ✕ deletes. English and Chinese text
-    side by side; an empty text means "no caption in that language".
+## Timeline gestures
 
-The overlay under the video shows the active caption of the preview language while playing, so
-you can scrub and watch the timing without exporting.
+| Do | Effect |
+|---|---|
+| Click the ruler, or drag along it | Move the playhead / scrub |
+| Click a clip | Select it (inspector: take, skip, in/out, prompt) |
+| Drag a clip's **left edge** | Trim the head (`trim.in`); everything after shifts left |
+| Drag a clip's **right edge** | Trim the tail (`trim.out`) |
+| Drag a caption block | Move it (start and end together), kept inside its clip |
+| Drag a caption's left/right edge | Change its start / end |
+| Click a caption | Select it (inspector: times, EN and ZH text, delete) |
+| Zoom slider / **fit** | Pixels per second / fit the whole programme |
+
+Caption blocks are shown in both language tracks; a dashed block means that language has no text
+yet. Times are stored relative to the untrimmed take, so trimming a clip never moves its captions.
+
+## Keyboard
+
+| Key | Action |
+|---|---|
+| `Space` | Play / pause |
+| `←` `→` | Nudge the selected caption by one step (header "step"); with nothing selected, move the playhead |
+| `I` / `O` | Set the current clip's in / out point at the playhead |
+| `Delete` | Delete the selected caption |
+
+## Buttons
+
+- **+ caption at playhead** — new 2 s caption in the current clip.
+- **auto-time this clip** — re-run the silence detection for the clip under the playhead; Chinese
+  text already written for identical English lines is kept.
+- **Export EN / Export ZH / Export both** — saves, renders `<output>_<lang>.mp4` in the
+  background, and links the file when done.
 
 ## Workflow that works
 
-1. Play each shot once at 1× with the EN overlay. Most guesses are within a second; nudge the ones
-   that lead or lag.
-2. For shots with two speakers, use *start=ph* on the second line while the clip plays.
+1. Press **fit**, play from the start once with the EN overlay on. Most guesses are within a
+   second; drag the blocks that lead or lag.
+2. For a line that starts late, scrub to the first syllable and press *start = playhead* in the
+   inspector (or drag the block's left edge).
 3. Trim dead air at clip heads (H3 often opens on a half-second of stillness) and the tail after
-   the last line.
-4. Fill the Chinese column (or let Claude write it into `edit.json` and polish here).
+   the last line by dragging clip edges.
+4. Fill the Chinese column (or let Claude write it into `edit.json`, then polish here).
 5. Export EN, watch it once with sound, then Export ZH.
+
+Browser note: media only loads in a visible tab; a hidden/background automation window shows a
+black preview although everything else works.

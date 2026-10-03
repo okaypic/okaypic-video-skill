@@ -109,7 +109,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(data)
         elif path.startswith("/takes/") or path.startswith("/out/"):
             name = os.path.basename(path)
-            if not re.fullmatch(r"[\w.-]+\.mp4", name):
+            if not re.fullmatch(r"[\w.-]+\.(mp4|jpg)", name):
                 return self.send_error(404)
             sub = "takes" if path.startswith("/takes/") else ""
             self.send_file(os.path.join(STATE["ep_dir"], sub, name))
@@ -135,7 +135,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         else:
             self.send_response(200)
         self.send_header("Accept-Ranges", "bytes")
-        self.send_header("Content-Type", "video/mp4")
+        self.send_header("Content-Type", "image/jpeg" if fp.endswith(".jpg") else "video/mp4")
         self.send_header("Content-Length", str(end - start + 1))
         self.end_headers()
         with open(fp, "rb") as f:

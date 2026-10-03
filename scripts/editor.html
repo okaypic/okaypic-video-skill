@@ -4,188 +4,410 @@
 <meta charset="utf-8">
 <title>okaypic editor</title>
 <style>
-  :root { color-scheme: dark; }
-  body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #141210; color: #e8e2d6; }
-  header { position: sticky; top: 0; z-index: 5; background: #1f1a14; border-bottom: 1px solid #3a3128; padding: 10px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  header h1 { font-size: 16px; margin: 0 12px 0 0; color: #f5c542; }
+  :root { color-scheme: dark; --gold: #f5c542; --bg: #141210; --panel: #1b1713; --line: #3a3128; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 13px/1.4 system-ui, sans-serif; background: var(--bg); color: #e8e2d6; height: 100vh; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; }
+  header { background: #1f1a14; border-bottom: 1px solid var(--line); padding: 8px 14px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0 8px 0 0; color: var(--gold); }
   button { background: #2c2520; color: #e8e2d6; border: 1px solid #4a3f33; border-radius: 6px; padding: 4px 10px; cursor: pointer; font: inherit; }
   button:hover { background: #3a3128; }
-  button.primary { background: #f5c542; color: #1a1108; border-color: #f5c542; font-weight: 600; }
-  button.small { padding: 1px 6px; font-size: 12px; }
+  button.primary { background: var(--gold); color: #1a1108; border-color: var(--gold); font-weight: 600; }
+  button.small { padding: 1px 7px; font-size: 12px; }
   select, input[type=number], input[type=text], textarea { background: #0f0d0b; color: #e8e2d6; border: 1px solid #4a3f33; border-radius: 4px; padding: 3px 6px; font: inherit; }
-  input[type=number] { width: 68px; }
-  main { padding: 12px 16px 60px; display: flex; flex-direction: column; gap: 12px; }
-  .shot { display: grid; grid-template-columns: 480px 1fr; gap: 14px; background: #1b1713; border: 1px solid #332b23; border-radius: 10px; padding: 12px; }
-  .shot.skipped { opacity: .45; }
-  .vid { position: relative; }
-  video { width: 480px; height: 270px; background: #000; border-radius: 6px; display: block; }
-  .overlay { position: absolute; left: 0; right: 0; bottom: 28px; text-align: center; pointer-events: none; padding: 0 12px; }
-  .overlay span { display: inline-block; background: rgba(0,0,0,.75); color: #fff; font-weight: 700; font-size: 15px; padding: 2px 8px; border-radius: 4px; white-space: pre-wrap; }
-  .head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
-  .head b { font-size: 15px; color: #f5c542; }
-  .prompt { color: #9a8f80; font-size: 12px; max-height: 3.6em; overflow: auto; margin: 4px 0 8px; }
-  .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
-  table { border-collapse: collapse; width: 100%; }
-  td { padding: 3px 4px; vertical-align: top; }
-  td.t { white-space: nowrap; }
-  textarea { width: 100%; min-height: 36px; resize: vertical; box-sizing: border-box; }
+  input[type=number] { width: 72px; }
   .muted { color: #9a8f80; font-size: 12px; }
-  #log { font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; background: #0f0d0b; border: 1px solid #332b23; border-radius: 6px; padding: 8px; max-height: 160px; overflow: auto; margin: 0 16px; }
-  a { color: #f5c542; }
   .pill { background: #2c2520; border-radius: 10px; padding: 1px 8px; font-size: 12px; }
+
+  #top { display: grid; grid-template-columns: 1fr 360px; gap: 12px; padding: 10px 14px; min-height: 0; }
+  #stage { display: flex; flex-direction: column; align-items: center; min-height: 0; }
+  #screen { position: relative; width: 100%; max-width: 960px; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; max-height: calc(100vh - 420px); }
+  #screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  #screen video.hidden { visibility: hidden; }
+  #overlay { position: absolute; left: 0; right: 0; bottom: 6%; text-align: center; pointer-events: none; padding: 0 5%; }
+  #overlay span { display: inline-block; background: rgba(0,0,0,.6); color: #fff; font-weight: 700; font-size: clamp(12px, 2.2vw, 22px); padding: 2px 10px; border-radius: 4px; white-space: pre-wrap; }
+  #transport { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+  #tc { font: 600 15px ui-monospace, monospace; color: var(--gold); min-width: 150px; }
+
+  #inspector { background: var(--panel); border: 1px solid #332b23; border-radius: 10px; padding: 10px 12px; overflow: auto; }
+  #inspector h2 { font-size: 13px; margin: 0 0 8px; color: var(--gold); }
+  #inspector .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+  #inspector textarea { width: 100%; min-height: 44px; resize: vertical; }
+  #inspector .prompt { color: #9a8f80; font-size: 11px; max-height: 6em; overflow: auto; margin-top: 6px; }
+
+  #timeline { border-top: 1px solid var(--line); background: #100e0c; display: grid; grid-template-rows: auto 1fr; height: 300px; }
+  #tlbar { display: flex; gap: 12px; align-items: center; padding: 6px 14px; border-bottom: 1px solid var(--line); }
+  #tlscroll { overflow-x: auto; overflow-y: hidden; position: relative; }
+  #tlinner { position: relative; height: 100%; }
+  .track { position: absolute; left: 0; right: 0; }
+  #ruler { top: 0; height: 22px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .tick { position: absolute; top: 0; height: 100%; border-left: 1px solid #4a3f33; color: #9a8f80; font-size: 10px; padding-left: 3px; }
+  .tick.minor { height: 40%; top: 60%; border-left-color: #332b23; }
+  #clips { top: 28px; height: 96px; }
+  #caps { top: 132px; height: 48px; }
+  #capsZh { top: 186px; height: 48px; }
+  .label { position: sticky; left: 0; }
+  .trackname { position: absolute; left: 0; top: 0; bottom: 0; width: 0; }
+  .clip { position: absolute; top: 4px; height: 88px; border-radius: 6px; border: 2px solid #4a3f33; background: #2c2520 center/auto 100% repeat-x; overflow: hidden; cursor: pointer; user-select: none; }
+  .clip.selected { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  .clip.skipped { opacity: .35; background-image: none !important; }
+  .clip .name { position: absolute; left: 6px; top: 4px; font-size: 11px; font-weight: 600; text-shadow: 0 0 4px #000; background: rgba(0,0,0,.55); padding: 0 5px; border-radius: 3px; }
+  .clip .len { position: absolute; right: 6px; bottom: 4px; font-size: 10px; color: #ddd; text-shadow: 0 0 4px #000; }
+  .handle { position: absolute; top: 0; bottom: 0; width: 9px; cursor: ew-resize; background: rgba(245,197,66,.0); }
+  .handle.l { left: 0; border-left: 3px solid rgba(245,197,66,.8); }
+  .handle.r { right: 0; border-right: 3px solid rgba(245,197,66,.8); }
+  .clip:not(.selected) .handle { border-color: rgba(255,255,255,.25); }
+  .cap { position: absolute; top: 6px; height: 36px; border-radius: 4px; background: #2a3f5a; border: 1px solid #4a7fbf; padding: 2px 10px; font-size: 11px; line-height: 1.2; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: grab; user-select: none; }
+  .cap.zh { background: #3f2a5a; border-color: #8b5fd0; }
+  .cap.selected { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  .cap.empty { opacity: .4; border-style: dashed; }
+  .cap .handle.l, .cap .handle.r { border: none; width: 7px; }
+  #playhead { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px solid #ff4d4d; pointer-events: none; z-index: 3; }
+  #playhead::before { content: ''; position: absolute; top: 0; left: -6px; border: 6px solid transparent; border-top: 8px solid #ff4d4d; }
+  #log { font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; background: #0f0d0b; border: 1px solid #332b23; border-radius: 6px; padding: 6px 8px; max-height: 90px; overflow: auto; margin: 0 14px 6px; }
+  a { color: var(--gold); }
+  kbd { background: #2c2520; border: 1px solid #4a3f33; border-radius: 3px; padding: 0 4px; font-size: 11px; }
 </style>
 </head>
 <body>
 <header>
   <h1 id="title">okaypic editor</h1>
-  <label>preview captions <select id="lang"><option value="en">en</option><option value="zh">zh</option></select></label>
-  <label>caption nudge step <input type="number" id="step" value="0.2" step="0.1" min="0.05" style="width:56px"></label>
+  <label>captions <select id="lang"><option value="en">en</option><option value="zh">zh</option></select></label>
+  <label>step <input type="number" id="step" value="0.2" step="0.1" min="0.05" style="width:56px"> s</label>
   <span id="saved" class="pill">saved</span>
+  <span class="muted"><kbd>space</kbd> play · <kbd>←</kbd><kbd>→</kbd> nudge selection · <kbd>I</kbd>/<kbd>O</kbd> trim clip at playhead · <kbd>Del</kbd> delete caption</span>
   <span style="flex:1"></span>
   <button id="exportEn" class="primary">Export EN</button>
   <button id="exportZh" class="primary">Export ZH</button>
   <button id="exportBoth">Export both</button>
   <span id="exportState" class="muted"></span>
 </header>
-<div id="log" hidden></div>
-<main id="shots"></main>
-<script>
-let P = null;          // project: {ep, shots, edit}
-let saveTimer = null;
-const $ = (s, r = document) => r.querySelector(s);
-const fmt = (x) => (Math.round(x * 100) / 100).toFixed(2);
 
-function cfg() { return P.edit; }
-function captions(sid) { const c = cfg().captions = cfg().captions || {}; return (c[sid] = c[sid] || []); }
-function trim(sid) { const t = cfg().trim = cfg().trim || {}; return (t[sid] = t[sid] || {}); }
-function pick(sid) { return (cfg().picks || {})[sid] || 'a'; }
-
-function markDirty() {
-  $('#saved').textContent = 'saving…';
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, 600);
-}
-async function save() {
-  await fetch('/api/save', { method: 'POST', body: JSON.stringify(cfg()) });
-  $('#saved').textContent = 'saved';
-}
-
-async function load() {
-  P = await (await fetch('/api/project')).json();
-  $('#title').textContent = `okaypic editor · ${P.ep}`;
-  const main = $('#shots');
-  main.innerHTML = '';
-  for (const s of P.shots) main.appendChild(shotCard(s));
-}
-
-function shotCard(s) {
-  const sid = s.id;
-  const el = document.createElement('section');
-  el.className = 'shot' + ((cfg().skip || []).includes(sid) ? ' skipped' : '');
-  el.dataset.sid = sid;
-  const take = pick(sid);
-  const dur = s.durations[take] || 0;
-  el.innerHTML = `
-    <div class="vid">
-      <video preload="none" controls poster="/poster/${sid}_${take}.jpg" src="/takes/${sid}_${take}.mp4"></video>
-      <div class="overlay"><span hidden></span></div>
-      <div class="row muted"><span>playhead <b class="ph">0.00</b> s · take length ${fmt(dur)} s</span></div>
+<div id="top">
+  <div id="stage">
+    <div id="screen">
+      <video id="v0" preload="auto"></video>
+      <video id="v1" preload="auto" class="hidden"></video>
+      <div id="overlay"><span hidden></span></div>
     </div>
-    <div>
-      <div class="head">
-        <b>Shot ${sid}</b>
-        <label>take <select class="take">${s.takes.map(t => `<option ${t === take ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
-        <label><input type="checkbox" class="skip" ${(cfg().skip || []).includes(sid) ? 'checked' : ''}> skip</label>
-        <span class="muted">refs: ${s.refs.join(', ') || '—'}</span>
-      </div>
-      <div class="prompt">${s.prompt.replace(/</g, '&lt;')}</div>
-      <div class="row">
-        <span>trim</span>
-        <label>in <input type="number" class="tin" step="0.1" min="0" value="${trim(sid).in ?? 0}"></label>
-        <button class="small setin">◀ set in from playhead</button>
-        <label>out <input type="number" class="tout" step="0.1" min="0" placeholder="${fmt(dur)}" value="${trim(sid).out ?? ''}"></label>
-        <button class="small setout">set out from playhead ▶</button>
-        <button class="small cleartrim">clear</button>
-      </div>
-      <div class="row">
-        <span>captions</span>
-        <button class="small shiftall" data-d="-1">◀ all −step</button>
-        <button class="small shiftall" data-d="1">all +step ▶</button>
-        <button class="small autotime">auto-time from audio</button>
-        <button class="small addcap">+ add</button>
-      </div>
-      <table class="caps"></table>
-    </div>`;
-  const video = $('video', el);
-  const overlay = $('.overlay span', el);
-  video.addEventListener('timeupdate', () => {
-    $('.ph', el).textContent = fmt(video.currentTime);
-    const lang = $('#lang').value;
-    const c = captions(sid).find(c => video.currentTime >= c.start && video.currentTime < c.end && (c[lang] || '').trim());
-    overlay.hidden = !c;
-    overlay.textContent = c ? c[lang] : '';
-  });
-  $('.take', el).onchange = (e) => { (cfg().picks = cfg().picks || {})[sid] = e.target.value; video.poster = `/poster/${sid}_${e.target.value}.jpg`; video.src = `/takes/${sid}_${e.target.value}.mp4`; markDirty(); };
-  $('.skip', el).onchange = (e) => { const sk = new Set(cfg().skip || []); e.target.checked ? sk.add(sid) : sk.delete(sid); cfg().skip = [...sk]; el.classList.toggle('skipped', e.target.checked); markDirty(); };
-  const tin = $('.tin', el), tout = $('.tout', el);
-  const setTrim = () => { trim(sid).in = parseFloat(tin.value) || 0; trim(sid).out = tout.value === '' ? null : parseFloat(tout.value); markDirty(); };
-  tin.onchange = tout.onchange = setTrim;
-  $('.setin', el).onclick = () => { tin.value = fmt(video.currentTime); setTrim(); };
-  $('.setout', el).onclick = () => { tout.value = fmt(video.currentTime); setTrim(); };
-  $('.cleartrim', el).onclick = () => { tin.value = 0; tout.value = ''; setTrim(); };
-  for (const b of el.querySelectorAll('.shiftall')) b.onclick = () => {
-    const d = parseFloat($('#step').value) * parseInt(b.dataset.d);
-    for (const c of captions(sid)) { c.start = Math.max(0, c.start + d); c.end = Math.max(c.start + 0.1, c.end + d); }
-    renderCaps(el, s); markDirty();
-  };
-  $('.autotime', el).onclick = async () => {
-    const r = await (await fetch('/api/autotime', { method: 'POST', body: JSON.stringify({ shot: sid, take: pick(sid) }) })).json();
-    const old = captions(sid);
-    // keep translations the user already wrote for the same English line
-    for (const c of r.captions) { const o = old.find(x => x.en === c.en); if (o) c.zh = o.zh; }
-    cfg().captions[sid] = r.captions; renderCaps(el, s); markDirty();
-  };
-  $('.addcap', el).onclick = () => { captions(sid).push({ start: Math.round(video.currentTime * 100) / 100, end: Math.round(video.currentTime * 100) / 100 + 2, en: '', zh: '' }); renderCaps(el, s); markDirty(); };
-  renderCaps(el, s);
-  return el;
+    <div id="transport">
+      <button id="play">▶ Play</button>
+      <button id="prevClip" class="small">⏮ clip</button>
+      <button id="nextClip" class="small">clip ⏭</button>
+      <span id="tc">00:00.00 / 00:00.00</span>
+      <span id="clipinfo" class="muted"></span>
+    </div>
+  </div>
+  <aside id="inspector"><h2>Nothing selected</h2><div class="muted">Click a clip or a caption in the timeline.</div></aside>
+</div>
+
+<div id="timeline">
+  <div id="tlbar">
+    <span class="muted">timeline</span>
+    <label class="muted">zoom <input type="range" id="zoom" min="8" max="160" value="40" style="width:160px"></label>
+    <button id="fit" class="small">fit</button>
+    <button id="addCap" class="small">+ caption at playhead</button>
+    <button id="autotime" class="small">auto-time this clip</button>
+    <span id="total" class="muted"></span>
+    <span style="flex:1"></span>
+    <span class="muted">drag clip edges to trim · drag captions to move · drag caption edges to resize</span>
+  </div>
+  <div id="tlscroll"><div id="tlinner">
+    <div id="ruler" class="track"></div>
+    <div id="clips" class="track"></div>
+    <div id="caps" class="track"></div>
+    <div id="capsZh" class="track"></div>
+    <div id="playhead"></div>
+  </div></div>
+</div>
+<div id="log" hidden></div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const fmt2 = x => (Math.round(x * 100) / 100).toFixed(2);
+const tcFmt = t => { const m = Math.floor(t / 60), s = t - m * 60; return `${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}`; };
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+let P = null;             // {ep, shots, edit}
+let clips = [];           // laid-out, non-skipped, in order
+let pps = 40;             // pixels per second
+let sel = null;           // {type:'clip', sid} | {type:'cap', sid, i}
+let t = 0;                // program time
+let playing = false;
+let active = 0;           // which <video> is live
+const vids = [$('#v0'), $('#v1')];
+let saveTimer = null;
+
+const cfg = () => P.edit;
+const pick = sid => (cfg().picks || {})[sid] || 'a';
+const trimOf = sid => ((cfg().trim = cfg().trim || {}), (cfg().trim[sid] = cfg().trim[sid] || {}));
+const capsOf = sid => ((cfg().captions = cfg().captions || {}), (cfg().captions[sid] = cfg().captions[sid] || []));
+const shot = sid => P.shots.find(s => s.id === sid);
+const isSkipped = sid => (cfg().skip || []).includes(sid);
+
+function markDirty() { $('#saved').textContent = 'saving…'; clearTimeout(saveTimer); saveTimer = setTimeout(save, 500); }
+async function save() { await fetch('/api/save', { method: 'POST', body: JSON.stringify(cfg()) }); $('#saved').textContent = 'saved'; }
+
+// ---------- layout ----------
+function layout() {
+  clips = [];
+  let start = 0;
+  for (const s of P.shots) {
+    const take = pick(s.id), dur = s.durations[take] || 0;
+    const tr = trimOf(s.id);
+    const tin = clamp(+tr.in || 0, 0, dur), tout = clamp(tr.out == null ? dur : +tr.out, tin + 0.2, dur);
+    const skipped = isSkipped(s.id);
+    const len = skipped ? 0 : tout - tin;
+    clips.push({ sid: s.id, take, dur, in: tin, out: tout, start, len, skipped });
+    start += len;
+  }
+  return start;
+}
+const totalDur = () => clips.reduce((a, c) => a + c.len, 0);
+const clipAt = tt => clips.find(c => !c.skipped && tt >= c.start && tt < c.start + c.len) || [...clips].reverse().find(c => !c.skipped);
+const clipOf = sid => clips.find(c => c.sid === sid);
+
+// ---------- timeline render ----------
+function renderTimeline() {
+  const total = layout();
+  $('#total').textContent = `${clips.filter(c => !c.skipped).length} clips · ${tcFmt(total)}`;
+  const W = Math.max(total * pps + 200, $('#tlscroll').clientWidth);
+  $('#tlinner').style.width = W + 'px';
+  // ruler
+  const ruler = $('#ruler'); ruler.innerHTML = '';
+  const major = pps >= 60 ? 1 : pps >= 25 ? 5 : 10;
+  for (let s = 0; s <= total + 10; s += major / 5) {
+    const d = document.createElement('div');
+    const isMajor = Math.abs(s / major - Math.round(s / major)) < 1e-6;
+    d.className = 'tick' + (isMajor ? '' : ' minor');
+    d.style.left = s * pps + 'px';
+    if (isMajor) d.textContent = tcFmt(s).replace(/\.\d+$/, '');
+    ruler.appendChild(d);
+  }
+  // clips
+  const ct = $('#clips'); ct.innerHTML = '';
+  let skippedX = 0;
+  for (const c of clips) {
+    const d = document.createElement('div');
+    d.className = 'clip' + (c.skipped ? ' skipped' : '') + (sel?.type === 'clip' && sel.sid === c.sid ? ' selected' : '');
+    d.dataset.sid = c.sid;
+    if (c.skipped) { d.style.left = (total * pps + 20 + skippedX) + 'px'; d.style.width = '60px'; skippedX += 66; }
+    else { d.style.left = c.start * pps + 'px'; d.style.width = Math.max(c.len * pps, 14) + 'px'; d.style.backgroundImage = `url(/takes/${c.sid}_${c.take}.jpg)`; }
+    d.innerHTML = `<span class="name">${c.sid}${c.take}</span><span class="len">${c.skipped ? 'skipped' : fmt2(c.len) + 's'}</span>` +
+      (c.skipped ? '' : '<div class="handle l" data-h="l"></div><div class="handle r" data-h="r"></div>');
+    ct.appendChild(d);
+  }
+  // captions (two tracks: en, zh)
+  for (const [trackId, lang] of [['caps', 'en'], ['capsZh', 'zh']]) {
+    const tr = $('#' + trackId); tr.innerHTML = '';
+    for (const c of clips) {
+      if (c.skipped) continue;
+      capsOf(c.sid).forEach((cap, i) => {
+        const a = c.start + (cap.start - c.in), b = c.start + (cap.end - c.in);
+        if (b <= c.start || a >= c.start + c.len) return;
+        const d = document.createElement('div');
+        const text = (cap[lang] || '').trim();
+        d.className = 'cap ' + lang + (text ? '' : ' empty') + (sel?.type === 'cap' && sel.sid === c.sid && sel.i === i ? ' selected' : '');
+        d.dataset.sid = c.sid; d.dataset.i = i; d.dataset.lang = lang;
+        d.style.left = Math.max(a, c.start) * pps + 'px';
+        d.style.width = Math.max((Math.min(b, c.start + c.len) - Math.max(a, c.start)) * pps, 10) + 'px';
+        d.title = text;
+        d.innerHTML = `${text || '(empty)'}<div class="handle l" data-h="l"></div><div class="handle r" data-h="r"></div>`;
+        tr.appendChild(d);
+      });
+    }
+  }
+  updatePlayhead();
+}
+function updatePlayhead() {
+  $('#playhead').style.left = t * pps + 'px';
+  $('#tc').textContent = `${tcFmt(t)} / ${tcFmt(totalDur())}`;
+  const c = clipAt(t);
+  $('#clipinfo').textContent = c ? `shot ${c.sid} take ${c.take} · clip time ${fmt2(c.in + (t - c.start))}s` : '';
+  // keep playhead in view while playing
+  if (playing) {
+    const sc = $('#tlscroll'), x = t * pps;
+    if (x < sc.scrollLeft || x > sc.scrollLeft + sc.clientWidth - 60) sc.scrollLeft = x - 100;
+  }
 }
 
-function renderCaps(el, s) {
-  const sid = s.id, video = $('video', el), table = $('.caps', el);
-  table.innerHTML = '';
-  captions(sid).forEach((c, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="t">
-        <button class="small play" title="play from start">▶</button>
-        <input type="number" class="cs" step="0.1" value="${fmt(c.start)}"> – <input type="number" class="ce" step="0.1" value="${fmt(c.end)}"><br>
-        <button class="small nudge" data-d="-1">◀</button><button class="small nudge" data-d="1">▶</button>
-        <button class="small fromph" data-k="start">start=ph</button><button class="small fromph" data-k="end">end=ph</button>
-        <button class="small del" title="delete">✕</button>
-      </td>
-      <td><textarea class="en" placeholder="English">${c.en || ''}</textarea></td>
-      <td><textarea class="zh" placeholder="中文">${c.zh || ''}</textarea></td>`;
-    const cs = $('.cs', tr), ce = $('.ce', tr);
-    const upd = () => { c.start = parseFloat(cs.value) || 0; c.end = parseFloat(ce.value) || 0; markDirty(); };
-    cs.onchange = ce.onchange = upd;
-    $('.en', tr).oninput = (e) => { c.en = e.target.value; markDirty(); };
-    $('.zh', tr).oninput = (e) => { c.zh = e.target.value; markDirty(); };
-    $('.play', tr).onclick = () => { video.currentTime = c.start; video.play(); };
-    for (const b of tr.querySelectorAll('.nudge')) b.onclick = () => {
-      const d = parseFloat($('#step').value) * parseInt(b.dataset.d);
-      c.start = Math.max(0, Math.round((c.start + d) * 100) / 100); c.end = Math.max(c.start + 0.1, Math.round((c.end + d) * 100) / 100);
-      cs.value = fmt(c.start); ce.value = fmt(c.end); markDirty();
-    };
-    for (const b of tr.querySelectorAll('.fromph')) b.onclick = () => {
-      c[b.dataset.k] = Math.round(video.currentTime * 100) / 100;
-      if (c.end <= c.start) c.end = c.start + 0.5;
-      cs.value = fmt(c.start); ce.value = fmt(c.end); markDirty();
-    };
-    $('.del', tr).onclick = () => { captions(sid).splice(i, 1); renderCaps(el, s); markDirty(); };
-    table.appendChild(tr);
-  });
+// ---------- player ----------
+function srcFor(c) { return `/takes/${c.sid}_${c.take}.mp4`; }
+function prepare(vi, c) { const v = vids[vi]; const s = srcFor(c); if (!v.src.endsWith(s)) { v.src = s; v.load(); } return v; }
+function show(vi) { vids[vi].classList.remove('hidden'); vids[1 - vi].classList.add('hidden'); active = vi; }
+let curClip = null;
+function seekTo(tt, keepPlaying = playing) {
+  t = clamp(tt, 0, Math.max(totalDur() - 0.01, 0));
+  const c = clipAt(t);
+  if (!c) return;
+  const v = prepare(active, c);
+  curClip = c;
+  const local = c.in + (t - c.start);
+  const setTime = () => { v.currentTime = local; if (keepPlaying) v.play().catch(() => {}); };
+  if (v.readyState >= 1) setTime(); else v.addEventListener('loadedmetadata', setTime, { once: true });
+  show(active);
+  const n = nextClip(c); if (n) prepare(1 - active, n);
+  updatePlayhead(); renderOverlay();
 }
+function nextClip(c) { const i = clips.indexOf(c); return clips.slice(i + 1).find(x => !x.skipped) || null; }
+function prevClip(c) { const i = clips.indexOf(c); return [...clips.slice(0, i)].reverse().find(x => !x.skipped) || null; }
+function tick() {
+  if (!playing) return;
+  const v = vids[active], c = curClip;
+  if (c && v.readyState >= 2) {
+    const local = v.currentTime;
+    if (local >= c.out - 0.03 || v.ended) {
+      const n = nextClip(c);
+      if (!n) { pause(); t = totalDur(); updatePlayhead(); return; }
+      // swap to the preloaded element
+      const nv = prepare(1 - active, n);
+      curClip = n; t = n.start;
+      nv.currentTime = n.in; nv.play().catch(() => {}); v.pause();
+      show(1 - active);
+      const nn = nextClip(n); if (nn) prepare(1 - active, nn);
+    } else {
+      t = c.start + (local - c.in);
+    }
+    updatePlayhead(); renderOverlay();
+  }
+  requestAnimationFrame(tick);
+}
+function play() { playing = true; $('#play').textContent = '⏸ Pause'; seekTo(t, true); requestAnimationFrame(tick); }
+function pause() { playing = false; $('#play').textContent = '▶ Play'; vids.forEach(v => v.pause()); }
+function renderOverlay() {
+  const c = curClip, lang = $('#lang').value, span = $('#overlay span');
+  if (!c) { span.hidden = true; return; }
+  const local = c.in + (t - c.start);
+  const cap = capsOf(c.sid).find(x => local >= x.start && local < x.end && (x[lang] || '').trim());
+  span.hidden = !cap; span.textContent = cap ? cap[lang] : '';
+}
+$('#play').onclick = () => playing ? pause() : play();
+$('#prevClip').onclick = () => { const c = clipAt(t); const p = c && t - c.start > 0.3 ? c : prevClip(c); if (p) seekTo(p.start); };
+$('#nextClip').onclick = () => { const n = nextClip(clipAt(t)); if (n) seekTo(n.start); };
+$('#lang').onchange = () => renderOverlay();
 
+// ---------- timeline interaction ----------
+const tl = $('#tlinner');
+const xToTime = x => clamp((x - tl.getBoundingClientRect().left) / pps, 0, totalDur());
+$('#ruler').addEventListener('pointerdown', e => { seekTo(xToTime(e.clientX)); scrubbing = true; });
+let scrubbing = false;
+window.addEventListener('pointermove', e => { if (scrubbing) seekTo(xToTime(e.clientX)); });
+window.addEventListener('pointerup', () => { scrubbing = false; });
+
+let drag = null;
+tl.addEventListener('pointerdown', e => {
+  const h = e.target.closest('.handle'), capEl = e.target.closest('.cap'), clipEl = e.target.closest('.clip');
+  if (capEl) {
+    const sid = capEl.dataset.sid, i = +capEl.dataset.i, cap = capsOf(sid)[i];
+    select({ type: 'cap', sid, i });
+    drag = { kind: h ? 'cap-' + h.dataset.h : 'cap-move', sid, i, x0: e.clientX, s0: cap.start, e0: cap.end };
+    e.preventDefault();
+  } else if (clipEl) {
+    const sid = clipEl.dataset.sid, c = clipOf(sid);
+    select({ type: 'clip', sid });
+    if (h && !c.skipped) { drag = { kind: 'clip-' + h.dataset.h, sid, x0: e.clientX, in0: c.in, out0: c.out }; e.preventDefault(); }
+    else if (!c.skipped) seekTo(xToTime(e.clientX));
+  }
+});
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dt = (e.clientX - drag.x0) / pps;
+  if (drag.kind.startsWith('clip')) {
+    const c = clipOf(drag.sid), tr = trimOf(drag.sid);
+    if (drag.kind === 'clip-l') tr.in = +fmt2(clamp(drag.in0 + dt, 0, drag.out0 - 0.3));
+    else tr.out = +fmt2(clamp(drag.out0 + dt, drag.in0 + 0.3, c.dur));
+  } else {
+    const c = clipOf(drag.sid), cap = capsOf(drag.sid)[drag.i], len = drag.e0 - drag.s0;
+    if (drag.kind === 'cap-move') { cap.start = +fmt2(clamp(drag.s0 + dt, c.in, c.out - len)); cap.end = +fmt2(cap.start + len); }
+    else if (drag.kind === 'cap-l') cap.start = +fmt2(clamp(drag.s0 + dt, c.in, drag.e0 - 0.2));
+    else cap.end = +fmt2(clamp(drag.e0 + dt, drag.s0 + 0.2, c.out));
+  }
+  renderTimeline(); renderInspector(); renderOverlay();
+});
+window.addEventListener('pointerup', () => { if (drag) { drag = null; markDirty(); } });
+$('#zoom').oninput = e => { pps = +e.target.value; renderTimeline(); };
+$('#fit').onclick = () => { pps = clamp(($('#tlscroll').clientWidth - 220) / Math.max(totalDur(), 1), 8, 160); $('#zoom').value = pps; renderTimeline(); };
+
+// ---------- selection / inspector ----------
+function select(s) { sel = s; renderTimeline(); renderInspector(); }
+function renderInspector() {
+  const ins = $('#inspector');
+  if (!sel) { ins.innerHTML = '<h2>Nothing selected</h2><div class="muted">Click a clip or a caption in the timeline.</div>'; return; }
+  const s = shot(sel.sid), c = clipOf(sel.sid);
+  if (sel.type === 'clip') {
+    ins.innerHTML = `<h2>Shot ${c.sid}</h2>
+      <div class="row"><label>take <select id="iTake">${s.takes.map(x => `<option ${x === c.take ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+        <label><input type="checkbox" id="iSkip" ${c.skipped ? 'checked' : ''}> skip</label>
+        <span class="muted">take length ${fmt2(c.dur)}s</span></div>
+      <div class="row"><label>in <input type="number" id="iIn" step="0.1" value="${fmt2(c.in)}"></label>
+        <label>out <input type="number" id="iOut" step="0.1" value="${fmt2(c.out)}"></label>
+        <button class="small" id="iInPh">in = playhead</button><button class="small" id="iOutPh">out = playhead</button>
+        <button class="small" id="iClear">reset</button></div>
+      <div class="row muted">refs: ${s.refs.join(', ') || '—'} · captions: ${capsOf(c.sid).length}</div>
+      <div class="prompt">${s.prompt.replace(/</g, '&lt;')}</div>`;
+    $('#iTake').onchange = e => { (cfg().picks = cfg().picks || {})[c.sid] = e.target.value; vids.forEach(v => { v.removeAttribute('src'); v.load(); }); markDirty(); renderTimeline(); renderInspector(); seekTo(t, false); };
+    $('#iSkip').onchange = e => { const sk = new Set(cfg().skip || []); e.target.checked ? sk.add(c.sid) : sk.delete(c.sid); cfg().skip = [...sk]; markDirty(); renderTimeline(); renderInspector(); seekTo(t, false); };
+    const setTrim = () => { const tr = trimOf(c.sid); tr.in = +$('#iIn').value || 0; tr.out = +$('#iOut').value || null; markDirty(); renderTimeline(); renderInspector(); };
+    $('#iIn').onchange = $('#iOut').onchange = setTrim;
+    $('#iInPh').onclick = () => { trimOf(c.sid).in = +fmt2(c.in + (t - c.start)); markDirty(); renderTimeline(); renderInspector(); };
+    $('#iOutPh').onclick = () => { trimOf(c.sid).out = +fmt2(c.in + (t - c.start)); markDirty(); renderTimeline(); renderInspector(); };
+    $('#iClear').onclick = () => { cfg().trim[c.sid] = {}; markDirty(); renderTimeline(); renderInspector(); };
+  } else {
+    const cap = capsOf(sel.sid)[sel.i];
+    if (!cap) { sel = null; return renderInspector(); }
+    ins.innerHTML = `<h2>Caption · shot ${c.sid} #${sel.i + 1}</h2>
+      <div class="row"><label>start <input type="number" id="cS" step="0.1" value="${fmt2(cap.start)}"></label>
+        <label>end <input type="number" id="cE" step="0.1" value="${fmt2(cap.end)}"></label>
+        <span class="muted">(seconds in the take)</span></div>
+      <div class="row"><button class="small" id="cPrev">◀ −step</button><button class="small" id="cNext">+step ▶</button>
+        <button class="small" id="cSPh">start = playhead</button><button class="small" id="cEPh">end = playhead</button>
+        <button class="small" id="cPlay">▶ play from start</button><button class="small" id="cDel">✕ delete</button></div>
+      <div class="row"><textarea id="cEn" placeholder="English">${cap.en || ''}</textarea></div>
+      <div class="row"><textarea id="cZh" placeholder="中文">${cap.zh || ''}</textarea></div>`;
+    const upd = () => { markDirty(); renderTimeline(); renderOverlay(); };
+    $('#cS').onchange = e => { cap.start = +e.target.value; upd(); };
+    $('#cE').onchange = e => { cap.end = +e.target.value; upd(); };
+    $('#cEn').oninput = e => { cap.en = e.target.value; upd(); };
+    $('#cZh').oninput = e => { cap.zh = e.target.value; upd(); };
+    $('#cPrev').onclick = () => nudge(cap, -+$('#step').value);
+    $('#cNext').onclick = () => nudge(cap, +$('#step').value);
+    $('#cSPh').onclick = () => { cap.start = +fmt2(c.in + (t - c.start)); if (cap.end <= cap.start) cap.end = cap.start + 0.5; upd(); renderInspector(); };
+    $('#cEPh').onclick = () => { cap.end = +fmt2(c.in + (t - c.start)); if (cap.end <= cap.start) cap.start = Math.max(0, cap.end - 0.5); upd(); renderInspector(); };
+    $('#cPlay').onclick = () => { seekTo(c.start + (cap.start - c.in), false); play(); };
+    $('#cDel').onclick = () => { capsOf(c.sid).splice(sel.i, 1); sel = null; markDirty(); renderTimeline(); renderInspector(); };
+  }
+}
+function nudge(cap, d) {
+  const c = clipOf(sel.sid), len = cap.end - cap.start;
+  cap.start = +fmt2(clamp(cap.start + d, 0, c.dur - len)); cap.end = +fmt2(cap.start + len);
+  markDirty(); renderTimeline(); renderInspector(); renderOverlay();
+}
+$('#addCap').onclick = () => {
+  const c = clipAt(t); if (!c) return;
+  const local = +fmt2(c.in + (t - c.start));
+  capsOf(c.sid).push({ start: local, end: +fmt2(Math.min(local + 2, c.out)), en: '', zh: '' });
+  select({ type: 'cap', sid: c.sid, i: capsOf(c.sid).length - 1 }); markDirty();
+};
+$('#autotime').onclick = async () => {
+  const c = clipAt(t); if (!c) return;
+  const r = await (await fetch('/api/autotime', { method: 'POST', body: JSON.stringify({ shot: c.sid, take: c.take }) })).json();
+  const old = capsOf(c.sid);
+  for (const n of r.captions) { const o = old.find(x => x.en === n.en); if (o) n.zh = o.zh; }
+  cfg().captions[c.sid] = r.captions; markDirty(); renderTimeline(); renderInspector();
+};
+window.addEventListener('keydown', e => {
+  if (e.target.matches('input, textarea, select')) return;
+  const step = +$('#step').value;
+  if (e.code === 'Space') { e.preventDefault(); playing ? pause() : play(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    const d = (e.key === 'ArrowLeft' ? -1 : 1) * step;
+    if (sel?.type === 'cap') nudge(capsOf(sel.sid)[sel.i], d); else seekTo(t + d, false);
+  }
+  else if (e.key === 'i' || e.key === 'I') { const c = clipAt(t); if (c) { trimOf(c.sid).in = +fmt2(c.in + (t - c.start)); markDirty(); renderTimeline(); renderInspector(); } }
+  else if (e.key === 'o' || e.key === 'O') { const c = clipAt(t); if (c) { trimOf(c.sid).out = +fmt2(c.in + (t - c.start)); markDirty(); renderTimeline(); renderInspector(); } }
+  else if (e.key === 'Delete' && sel?.type === 'cap') { capsOf(sel.sid).splice(sel.i, 1); sel = null; markDirty(); renderTimeline(); renderInspector(); }
+});
+
+// ---------- export ----------
 async function exportLang(langs) {
   await save();
   const log = $('#log'); log.hidden = false; log.textContent = '';
@@ -194,24 +416,24 @@ async function exportLang(langs) {
     if (!r.ok) { log.textContent += `\n${r.error}`; return; }
     $('#exportState').textContent = `exporting ${lang}…`;
     let st;
-    do {
-      await new Promise(r => setTimeout(r, 2000));
-      st = await (await fetch('/api/status')).json();
-      log.textContent = st.log.join('\n');
-      log.scrollTop = log.scrollHeight;
-    } while (st.running);
+    do { await new Promise(r => setTimeout(r, 2000)); st = await (await fetch('/api/status')).json(); log.textContent = st.log.join('\n'); log.scrollTop = log.scrollHeight; } while (st.running);
     const done = st.log.find(l => l.startsWith('done '));
-    if (done) {
-      const file = done.slice(5).trim();
-      log.innerHTML += `\n<a href="/out/${file}" target="_blank">open ${file}</a>`;
-    }
+    if (done) { const file = done.slice(5).trim(); log.innerHTML += `\n<a href="/out/${file}" target="_blank">open ${file}</a>`; }
   }
   $('#exportState').textContent = 'export finished';
 }
 $('#exportEn').onclick = () => exportLang(['en']);
 $('#exportZh').onclick = () => exportLang(['zh']);
 $('#exportBoth').onclick = () => exportLang(['en', 'zh']);
-load();
+
+// ---------- boot ----------
+(async () => {
+  P = await (await fetch('/api/project')).json();
+  $('#title').textContent = `okaypic editor · ${P.ep}`;
+  renderTimeline();
+  $('#fit').click();
+  seekTo(0, false);
+})();
 </script>
 </body>
 </html>
