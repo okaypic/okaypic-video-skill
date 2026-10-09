@@ -11,7 +11,7 @@ It is the workflow behind **GOBLIN CITY**, an 11-episode urban-legend series who
 
 ## Watch: GOBLIN CITY · Episode 1 · The Liquidation
 
-[![GOBLIN CITY episode 1](docs/goblin-city-ep01.jpg)](https://okaypic.com/short-drama#goblin-city)
+[![GOBLIN CITY episode 1](docs/goblin-city-ep01.jpg)](https://okaypic.com/agent-skill)
 
 A founder bets his last payroll on a meme coin, is liquidated at 3:33 a.m., wakes up as a goblin
 and is led down a manhole into Undertown. Every shot, voice and sound effect was generated with
