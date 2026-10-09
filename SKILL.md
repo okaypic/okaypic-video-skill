@@ -45,7 +45,14 @@ the estimate before each paid step and **get their OK on the plan before generat
    reliable with short lines. Avoid on-screen text in prompts; overlay text in post instead.
 3. **Reference sheets.** Write `cast.json` (see `docs/cast-format.md`) and run
    `python scripts/gen_sheets.py ep01`. Show the user the sheets (they are the faces every clip
-   will inherit) and regenerate until approved. Rules that matter:
+   will inherit) and regenerate until approved.
+   **If you have your own image tool, use it for the sheets** (e.g. Codex, which has
+   gpt-image-2.5 built in): run `python scripts/gen_sheets.py ep01 --prompts-only`, render each
+   `refs/sheets/<name>.prompt.txt` with your tool as a 16:9 image (attach the entry's `ref` photo
+   when it has one) and save it as `refs/sheets/<name>.png`. That costs the user nothing on
+   okaypic. Fall back to the API (`gen_sheets.py ep01 --missing`) for anything your tool can't do.
+   Agents without an image tool (Claude Code and most others) use `gen_sheets.py` directly.
+   Rules that matter:
    - State ethnicity, age, build and height explicitly; models default to a generic face otherwise.
    - One retained visual anchor per character (a tie, a scar, a hat) survives across styles.
    - A character who changes form (human → creature) needs one sheet per form.
@@ -85,6 +92,20 @@ the estimate before each paid step and **get their OK on the plan before generat
   (`takes/leveled/`, −16 LUFS) as soon as it is downloaded; the editor previews and `edit.py`
   renders from those copies, then normalises the programme to −14 LUFS. If a narration is still
   buried, set the clip's volume slider in the editor (or `"gain": {"02": 4}` in `edit.json`).
+
+## Balance and top-ups
+
+- Before a batch: `python scripts/gen_clips.py ep01 --quote` prints what is done, what is in
+  flight (already paid) and what is left to render, with its cost and the current balance.
+  Quote that line to the user. After a crash or a stopped run, quote again: a resume only
+  charges for what is left.
+- The scripts check the balance and stop with a top-up link when it won't cover the batch, or when
+  the API answers 402 mid-batch (in-flight takes keep rendering and are downloaded). Tell the user
+  plainly: what it costs, what is left, that they can top up from US$2 at
+  https://okaypic.com/billing (card or WeChat Pay), and that re-running continues where it stopped.
+  New accounts start with a small free credit that runs out after a few clips; say so before
+  their first paid batch rather than after it fails.
+- `GET /api/balance` returns `{"balanceCents": ...}` for the key.
 
 ## Guardrails
 

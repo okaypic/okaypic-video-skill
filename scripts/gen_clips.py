@@ -2,6 +2,7 @@
 
     python gen_clips.py <episode_dir>              # every shot x every seed
     python gen_clips.py <episode_dir> 01 03 17     # only these shot ids
+    python gen_clips.py <episode_dir> --quote      # price what is left to render, submit nothing
 
 <episode_dir>/shots.json:
     {
@@ -20,7 +21,12 @@
 frame while the sheets are still used as references (locked frames are not numbered).
 
 Resumable: state lives in <episode_dir>/takes/state.json. Re-running skips finished takes and
-keeps polling submitted ones. At most MAX_INFLIGHT generations run at once (the account cap is
+keeps polling submitted ones (both already paid), and quotes and submits only what is left.
+Failed renders are refunded by the API; a retryable failure is resubmitted once under a new
+client_request_id. A submit whose answer was lost (crash, timeout) is resent with the same
+client_request_id, which the API answers with the original task instead of charging again.
+Before submitting, the balance is checked against the remaining cost; on HTTP 402 the script
+stops submitting, prints the top-up link and keeps polling what is already in flight. At most MAX_INFLIGHT generations run at once (the account cap is
 20). Each finished take gets a 5-frame contact sheet (<take>.jpg) next to the mp4 so you can
 pick takes without watching every clip.
 """
@@ -31,7 +37,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from okaypic_api import data_uri, download, request  # noqa: E402
+from okaypic_api import TOP_UP_URL, balance_cents, data_uri, download, h3_cost_cents, request, usd  # noqa: E402
 from edit import level_take  # noqa: E402
 
 MAX_INFLIGHT = 18
@@ -45,8 +51,10 @@ def contact_sheet(mp4):
 
 
 def main():
-    ep = sys.argv[1]
-    only = set(sys.argv[2:])
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    quote_only = "--quote" in sys.argv
+    ep = args[0]
+    only = set(args[1:])
     spec = json.load(open(os.path.join(ep, "shots.json"), encoding="utf-8"))
     takes_dir = os.path.join(ep, "takes")
     os.makedirs(takes_dir, exist_ok=True)
@@ -63,6 +71,38 @@ def main():
             continue
         for i, n in enumerate(spec.get("seeds", [1])):
             work.append((f"{shot['id']}_{'abcdef'[i]}", shot, 1000 + int(shot["id"]) * 10 + n))
+
+    def shot_cost(shot):
+        return h3_cost_cents(spec.get("resolution", "768p"), shot.get("duration", spec.get("duration", 10)))
+
+    def to_submit():
+        out = []
+        for k, shot, _ in work:
+            st = state.get(k, {})
+            if st.get("status") == "completed" or st.get("status") in INFLIGHT:
+                continue
+            if st.get("status") == "failed" and (st.get("attempt", 1) >= 2 or st.get("retryable") is False):
+                continue
+            out.append((k, shot))
+        return out
+
+    # quote only what is left: finished and in-flight takes are already paid
+    left = to_submit()
+    cost = sum(shot_cost(s) for _, s in left)
+    done = sum(1 for k, _, _ in work if state.get(k, {}).get("status") == "completed")
+    flying = sum(1 for k, _, _ in work if state.get(k, {}).get("status") in INFLIGHT)
+    bal = balance_cents()
+    print(f"{len(work)} takes: {done} done, {flying} in flight (already paid), {len(left)} to render = {usd(cost)}"
+          + (f"; balance {usd(bal)}" if bal is not None else ""), flush=True)
+    if quote_only:
+        return
+    out_of_funds = False
+    if left and bal is not None and bal < cost:
+        print(f"Not enough balance for the remaining takes ({usd(cost)} needed, {usd(bal)} left). "
+              f"Top up from US$2 at {TOP_UP_URL} and re-run; finished takes are kept.", flush=True)
+        if not flying:
+            return
+        out_of_funds = True  # just finish what is in flight
 
     ref_cache = {}
 
@@ -95,7 +135,7 @@ def main():
             save()
 
         inflight = [k for k, s in state.items() if s.get("status") in INFLIGHT]
-        for k, shot, seed in work:
+        for k, shot, seed in ([] if out_of_funds else work):
             st = state.get(k, {})
             if st.get("status") == "completed" or k in inflight:
                 continue
@@ -123,6 +163,12 @@ def main():
                 state[k] = {"status": "submitted", "taskId": r["taskId"], "seed": seed, "attempt": attempt}
                 inflight.append(k)
                 print(f"submitted {k} seed={seed}", flush=True)
+            elif code == 402:
+                out_of_funds = True
+                print(f"Balance ran out ({usd(r.get('balanceCents', 0))} left, this take costs "
+                      f"{usd(r.get('costCents', 0))}). Top up from US$2 at {TOP_UP_URL} and re-run; "
+                      "nothing already rendered or in flight is charged again.", flush=True)
+                break
             else:
                 state[k] = {"status": "failed", "attempt": attempt, "retryable": True, "error": r}
                 print(f"SUBMIT ERROR {k}: http {code} {r}", flush=True)

@@ -1,8 +1,12 @@
 # GOBLIN CITY · Episode 1 · The Liquidation
 
 A real episode made with this skill on 2026-10-03: 28 shots × 10 s, two takes each, 56/56
-renders succeeded, about US$6 in API calls, assembled to a 4:49 episode with English and
-Chinese captions.
+renders succeeded, about US$6 in API calls. Three shots were dropped in the edit; the final cut
+is 25 shots, 3:52, with English and Chinese captions.
+
+Watch it: [English](https://okaypic.b-cdn.net/marketing/goblin-city/goblin-city-ep01-en.mp4) ·
+[中文](https://okaypic.b-cdn.net/marketing/goblin-city/goblin-city-ep01-zh.mp4) ·
+[teaser](https://okaypic.b-cdn.net/marketing/goblin-city/goblin-city-ep01-teaser-en.mp4)
 
 **Logline.** In Meridian, a near-future megacity where your face is your wallet and your key, a
 founder who can't raise his Series B bets everything on a meme coin called GoblinCoin on a tip

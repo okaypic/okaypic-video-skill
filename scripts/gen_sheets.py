@@ -2,6 +2,12 @@
 
     python gen_sheets.py <episode_dir> [name ...]        # default: every entry in cast.json
     python gen_sheets.py <episode_dir> --model gemini-3.1-flash-image-preview
+    python gen_sheets.py <episode_dir> --prompts-only   # write refs/sheets/<name>.prompt.txt, render nothing
+    python gen_sheets.py <episode_dir> --missing        # only entries without a sheet yet
+
+--prompts-only is for agents that can make images themselves (Codex has gpt-image-2.5 built in):
+render each prompt with the agent's own tool, save it as refs/sheets/<name>.png, and the rest of
+the pipeline uses it like any other sheet. This script's API rendering is the fallback.
 
 <episode_dir>/cast.json describes who to draw:
     {
@@ -80,6 +86,8 @@ def main():
     ap.add_argument("--model", default="gpt-image-2.5")
     ap.add_argument("--resolution", default="2k", help="gpt-image-2.5 / seedream only: 1k, 2k, 4k")
     ap.add_argument("--take", type=int, default=1, help="bump to regenerate with a fresh idempotency key")
+    ap.add_argument("--prompts-only", action="store_true", help="write the prompts, do not call the API")
+    ap.add_argument("--missing", action="store_true", help="skip entries that already have a sheet")
     a = ap.parse_args()
 
     ep = a.episode_dir
@@ -94,6 +102,8 @@ def main():
     for kind, name, c in entries:
         if a.names and name not in a.names:
             continue
+        if a.missing and os.path.exists(os.path.join(out_dir, f"{name}.png")):
+            continue
         ref = c.get("ref")
         if kind == "character":
             prompt = character_prompt(c["look"], c.get("height_cm"), c.get("build"), style, with_ref=bool(ref))
@@ -106,6 +116,10 @@ def main():
             body["images"] = [ref if ref.startswith("https://") else data_uri(os.path.join(ep, ref))]
         with open(os.path.join(out_dir, f"{name}.prompt.txt"), "w", encoding="utf-8") as f:
             f.write(prompt)
+        if a.prompts_only:
+            note = f" (reference image: {ref})" if ref else ""
+            print(f"prompt {name}: {os.path.join(out_dir, name + '.prompt.txt')}{note}", flush=True)
+            continue
         tid = submit_image(body, f"{os.path.basename(os.path.abspath(ep))}-sheet-{name}-{a.take}")
         jobs[name] = tid
         print("submitted", name, flush=True)

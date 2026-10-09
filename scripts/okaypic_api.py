@@ -10,6 +10,7 @@ Every call sends `client_request_id` as the Idempotency-Key, so a retried reques
 """
 import base64
 import json
+import math
 import mimetypes
 import os
 import subprocess
@@ -18,6 +19,35 @@ import urllib.error
 import urllib.request
 
 DEFAULT_BASE = "https://okaypic.com"
+TOP_UP_URL = "https://okaypic.com/billing"
+
+# MiniMax H3 list prices, US cents per second of output (https://okaypic.com/pricing)
+H3_CENTS_PER_SECOND = {"480p": 5 / 7, "768p": 1.0, "1080p": 15 / 7}
+
+
+def h3_cost_cents(resolution, seconds):
+    return math.ceil(H3_CENTS_PER_SECOND.get(resolution, 1.0) * seconds)
+
+
+def usd(cents):
+    return f"US${cents / 100:.2f}"
+
+
+class TopUpNeeded(SystemExit):
+    """The account balance does not cover the request (HTTP 402)."""
+
+    def __init__(self, cost_cents=None, balance_cents=None):
+        msg = "Your okaypic balance is too low for this"
+        if cost_cents is not None and balance_cents is not None:
+            msg += f" ({usd(cost_cents)} needed, {usd(balance_cents)} left)"
+        super().__init__(msg + f". Top up from US$2 at {TOP_UP_URL} (card or WeChat Pay), then re-run: "
+                         "finished work is kept and never charged again.")
+
+
+def balance_cents():
+    """Current balance in US cents, or None if the API could not be reached."""
+    code, r = request("GET", "/api/balance")
+    return r.get("balanceCents") if code == 200 else None
 
 
 def load_env():
@@ -98,6 +128,8 @@ def data_uri(path, max_px=2048):
 def submit_image(body, client_request_id):
     body = {**body, "client_request_id": client_request_id}
     code, r = request("POST", "/api/image/generate", body, client_request_id)
+    if code == 402:
+        raise TopUpNeeded(r.get("costCents"), r.get("balanceCents"))
     if code not in (200, 201, 202) or not r.get("taskId"):
         raise RuntimeError(f"image submit failed: http {code} {r}")
     return r["taskId"]
@@ -106,6 +138,8 @@ def submit_image(body, client_request_id):
 def submit_video(body, client_request_id):
     body = {**body, "client_request_id": client_request_id}
     code, r = request("POST", "/api/video/generate", body, client_request_id)
+    if code == 402:
+        raise TopUpNeeded(r.get("costCents"), r.get("balanceCents"))
     if code not in (200, 201, 202) or not r.get("taskId"):
         raise RuntimeError(f"video submit failed: http {code} {r}")
     return r["taskId"]

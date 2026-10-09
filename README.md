@@ -6,8 +6,20 @@ we use ourselves: reference sheets, batch rendering, a local editing UI with Eng
 captions, and a one-command final cut.
 
 It is the workflow behind **GOBLIN CITY**, an 11-episode urban-legend series whose first episode
-(28 shots, ~5 minutes, two takes per shot) cost about US$6 in API calls and an afternoon.
+(28 shots rendered, two takes each, cut to 3:52) cost about US$6 in API calls and an afternoon.
 `examples/goblin-city-ep01/` has the real shot list and edit decisions.
+
+## Watch: GOBLIN CITY · Episode 1 · The Liquidation
+
+[![GOBLIN CITY episode 1](docs/goblin-city-ep01.jpg)](https://okaypic.com/short-drama#goblin-city)
+
+A founder bets his last payroll on a meme coin, is liquidated at 3:33 a.m., wakes up as a goblin
+and is led down a manhole into Undertown. Every shot, voice and sound effect was generated with
+MiniMax H3 through this skill; the cut and captions are `edit.py`.
+
+**Watch:** [full episode, English captions](https://okaypic.b-cdn.net/marketing/goblin-city/goblin-city-ep01-en.mp4) (3:52) ·
+[中文字幕](https://okaypic.b-cdn.net/marketing/goblin-city/goblin-city-ep01-zh.mp4) ·
+[50-second teaser](https://okaypic.b-cdn.net/marketing/goblin-city/goblin-city-ep01-teaser-en.mp4)
 
 ```
 plan  →  shot list  →  reference sheets  →  takes (H3)  →  pick & cut  →  EN / ZH export
@@ -17,7 +29,8 @@ plan  →  shot list  →  reference sheets  →  takes (H3)  →  pick & cut  �
 ## Install the skill
 
 ```bash
-# for one project
+npx skills add okaypic/okaypic-video-skill          # any agent that reads SKILL.md (skills.sh)
+# or by hand, for one project
 git clone https://github.com/okaypic/okaypic-video-skill .claude/skills/okaypic-video
 # or for every project
 git clone https://github.com/okaypic/okaypic-video-skill ~/.claude/skills/okaypic-video
@@ -25,6 +38,13 @@ git clone https://github.com/okaypic/okaypic-video-skill ~/.claude/skills/okaypi
 
 Then in Claude Code: *"use the okaypic-video skill to make a 60-second ad for …"* or just
 describe the video you want; the skill triggers on okaypic / AI video requests.
+
+**Codex** reads the same `SKILL.md` (clone it into `~/.codex/skills/okaypic-video`). Codex draws
+the character sheets with its own built-in image model, so only the video clips go through the
+okaypic API.
+
+New okaypic accounts get US$0.30 of free credit — enough for a few test clips. After that, top up
+from US$2; `python scripts/gen_clips.py ep01 --quote` shows exactly what a batch will cost first.
 
 Requirements: Python 3.9+, `ffmpeg` + `ffprobe` on PATH, an okaypic API key
 (`OKAYPIC_API_KEY` in the environment or a `.env` file). Get a key and read the API reference at
@@ -49,7 +69,7 @@ python scripts/edit.py ep01 --lang zh             # or export from the command l
 | `SKILL.md` | The skill: the workflow Claude follows, prompting rules, guardrails |
 | `scripts/okaypic_api.py` | Minimal API client: `.env` key, idempotent submits, polling, inline base64 media |
 | `scripts/gen_sheets.py` | Character sheets (front/profile close-ups + front/side/back full body) and location sheets from `cast.json` |
-| `scripts/gen_clips.py` | Batch MiniMax H3 rendering from `shots.json`: 2 seeds per shot, ≤18 in flight, resumable, 5-frame contact sheet per take |
+| `scripts/gen_clips.py` | Batch MiniMax H3 rendering from `shots.json`: 2 seeds per shot, ≤18 in flight, resumable, `--quote` prices only what is left, 5-frame contact sheet per take |
 | `scripts/edit.py` | Final cut: picks, trims, burned-in captions (en/zh), end card, per-clip levelling + −14 LUFS |
 | `scripts/editor.py` + `editor.html` | Local editing UI: pick takes, trim, nudge captions while watching, write translations, export |
 | `docs/` | File formats, H3 prompting guide, API cheat-sheet, editor manual |
@@ -77,6 +97,12 @@ background and link the result when done.
 
 A 25-shot episode at two takes per shot is ~US$5. Failed tasks are refunded; retrying a request
 with the same `client_request_id` never charges twice.
+
+**Resuming a batch that died halfway** (`gen_clips.py` keeps its state in `takes/state.json`):
+finished takes are skipped, takes already submitted are polled rather than resubmitted, and only
+what is left is quoted and submitted. A submit whose response was lost is resent with the same
+`client_request_id`, so the API returns the original task instead of charging again. A failed
+take was refunded; it is retried once under a new id.
 
 ## License
 
