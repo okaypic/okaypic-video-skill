@@ -112,7 +112,8 @@ the estimate before each paid step and **get their OK on the plan before generat
 - Never put the API key in a prompt, a log, a commit, or a file you did not create for it.
 - Before any paid batch, state the number of calls and the cost, and wait for approval unless the
   user already approved that batch.
-- Keep `client_request_id` unique per take (`<ep>-<shot>_<take>-<attempt>`); retrying a timed-out
+- Keep `client_request_id` unique per take (`<project id>-<shot>_<take>-<attempt>`; the project id lives in
+  `<ep>/.okaypic-id` — never copy that file into another project); retrying a timed-out
   request with the same id is free.
 - Failed tasks are refunded; `content_violation` is never retryable — rewrite the prompt.
 - Do not watch full videos to judge takes; use contact sheets, then only open the finalists.

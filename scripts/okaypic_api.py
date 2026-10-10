@@ -163,3 +163,24 @@ def download(url, path):
     except Exception:
         subprocess.run(["curl", "-s", "-L", "-o", path, "--max-time", "600", url], check=True)
     return path
+
+
+def project_tag(ep):
+    """The prefix of every client_request_id for this episode folder, kept in <ep>/.okaypic-id.
+
+    Idempotency keys are per account and permanent, so two projects whose episode folders are both
+    called "ep01" must not produce the same ids: the second would get the first one's old results
+    back. New folders get "<name>-<random>"; folders that already have takes or sheets keep the
+    plain folder name they were rendered under, so resuming them still matches."""
+    path = os.path.join(ep, ".okaypic-id")
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            return f.read().strip()
+    name = os.path.basename(os.path.abspath(ep))
+    sheets = os.path.join(ep, "refs", "sheets")
+    started = os.path.exists(os.path.join(ep, "takes", "state.json")) or (
+        os.path.isdir(sheets) and any(f.endswith(".png") for f in os.listdir(sheets)))
+    tag = name if started else f"{name}-{os.urandom(3).hex()}"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(tag + chr(10))
+    return tag

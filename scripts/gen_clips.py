@@ -37,7 +37,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from okaypic_api import TOP_UP_URL, balance_cents, data_uri, download, h3_cost_cents, request, usd  # noqa: E402
+from okaypic_api import TOP_UP_URL, balance_cents, data_uri, download, h3_cost_cents, project_tag, request, usd  # noqa: E402
 from edit import level_take  # noqa: E402
 
 MAX_INFLIGHT = 18
@@ -65,7 +65,7 @@ def main():
     os.makedirs(takes_dir, exist_ok=True)
     state_path = os.path.join(takes_dir, "state.json")
     state = json.load(open(state_path, encoding="utf-8")) if os.path.exists(state_path) else {}
-    tag = os.path.basename(os.path.abspath(ep))
+    tag = project_tag(ep)
 
     def save():
         json.dump(state, open(state_path, "w", encoding="utf-8"), indent=1)

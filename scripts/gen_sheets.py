@@ -38,7 +38,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from okaypic_api import data_uri, download, poll, submit_image  # noqa: E402
+from okaypic_api import data_uri, download, poll, project_tag, submit_image  # noqa: E402
 
 BUILD = {"slim": "slim", "average": "average", "athletic": "athletic", "sturdy": "stocky, sturdy",
          "heavy": "heavy-set, large"}
@@ -120,7 +120,7 @@ def main():
             note = f" (reference image: {ref})" if ref else ""
             print(f"prompt {name}: {os.path.join(out_dir, name + '.prompt.txt')}{note}", flush=True)
             continue
-        tid = submit_image(body, f"{os.path.basename(os.path.abspath(ep))}-sheet-{name}-{a.take}")
+        tid = submit_image(body, f"{project_tag(ep)}-sheet-{name}-{a.take}")
         jobs[name] = tid
         print("submitted", name, flush=True)
 
