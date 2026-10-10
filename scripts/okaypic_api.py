@@ -91,6 +91,9 @@ def _curl(method, url, headers, body):
             os.remove(tmp)
 
 
+_use_curl = False
+
+
 def request(method, path, body=None, idempotency_key=None):
     """HTTP call to the API. Tries urllib, falls back to curl (some Windows setups time out
     in urllib's TLS handshake while curl works). Returns (status_code, json)."""
@@ -99,14 +102,18 @@ def request(method, path, body=None, idempotency_key=None):
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     if idempotency_key:
         headers["Idempotency-Key"] = idempotency_key
+    global _use_curl
     data = json.dumps(body) if body is not None else None
+    if _use_curl:
+        return _curl(method, url, headers, data)
     try:
         req = urllib.request.Request(url, data=data.encode() if data else None, method=method, headers=headers)
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with urllib.request.urlopen(req, timeout=30) as r:
             return r.status, json.loads(r.read().decode() or "{}")
     except urllib.error.HTTPError as e:
         return e.code, json.loads(e.read().decode() or "{}")
     except Exception:
+        _use_curl = True  # urllib's TLS stalls on some setups: use curl for the rest of the run
         return _curl(method, url, headers, data)
 
 
