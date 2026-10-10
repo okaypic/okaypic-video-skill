@@ -56,6 +56,11 @@ def main():
     ep = args[0]
     only = set(args[1:])
     spec = json.load(open(os.path.join(ep, "shots.json"), encoding="utf-8"))
+    # locked frames (ref_mode "okay") need 5-15 s; catch it here instead of a 400 per take
+    short = [s["id"] for s in spec["shots"] if s.get("first_frame")
+             and not 5 <= s.get("duration", spec.get("duration", 10)) <= 15]
+    if short:
+        raise SystemExit(f"shots {', '.join(short)}: with first_frame the duration must be 5-15 s")
     takes_dir = os.path.join(ep, "takes")
     os.makedirs(takes_dir, exist_ok=True)
     state_path = os.path.join(takes_dir, "state.json")
