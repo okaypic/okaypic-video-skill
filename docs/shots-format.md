@@ -31,7 +31,7 @@ One file per episode. `gen_clips.py` renders it; `edit.py` cuts it in this order
 | `style` | Prepended to every prompt. Keep it one sentence; it is what makes the episode look like one film. |
 | `seeds` | How many takes per shot and their seed suffix. Take letters are `a, b, c…`; seed = `1000 + 10 × shot id + n`. Two takes is the sweet spot. |
 | `duration` / `resolution` / `ratio` | Defaults for every shot (`duration` can be overridden per shot). 1–15 s; 480p / 768p / 1080p (1080p: ≤ 10 s, omni only). |
-| `effort` | Optional, `1x` (default) / `1.5x` / `2x` — more sampling steps. Can be set per shot too. Leave it out unless a shot needs it; see prompting-h3.md. |
+| `effort` | Optional, `1x` (default) / `1.5x` / `2x` — a better render. Can be set per shot too. Leave it out unless a shot needs it; see prompting-h3.md. |
 | `shots[].id` | Numeric string, unique. Order in the array is the cut order; ids don't have to be sorted (insert "26" after "10" when you add a shot later). |
 | `shots[].refs` | Sheet names from `refs/sheets/<name>.png`, becoming `<Picture 1>`, `<Picture 2>`… in that order. Up to 9. Empty for pure scenery. |
 | `shots[].prompt` | Plain English, see [prompting-h3.md](prompting-h3.md). Dialogue in double quotes — `edit.py` extracts those as the captions. |

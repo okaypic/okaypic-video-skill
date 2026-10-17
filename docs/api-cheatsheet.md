@@ -45,7 +45,7 @@ Ratios 16:9 / 9:16. Output has generated voices, SFX and ambience.
 | `ref_mode` | `omni` (default) / `okay` / `first-last` / `lip-sync` — see prompting-h3.md |
 | `media` | `[{"type": "image"|"audio", "url": https or data URI}]`, ≤ 9 images + 3 audio |
 | `first_frame` / `last_frame` | https URL or data URI (`okay`, `first-last`) |
-| `effort` | `1x` (default) / `1.5x` / `2x` — more sampling steps, costs 1.3x / 1.6x and renders ~1.4x / ~1.9x slower. 480p / 768p only. Leave it out unless you know you want it; see prompting-h3.md |
+| `effort` | `1x` (default) / `1.5x` / `2x` — a better render, costs 1.3x / 1.6x and renders ~1.4x / ~1.9x slower. 480p / 768p only. Leave it out unless you know you want it; see prompting-h3.md |
 | `optimize_prompt` | `true` recommended; rewrites plain English into H3's structured prompt |
 | `seed` | 0–2147483647, H3 only (other models reject it) |
 
