@@ -21,7 +21,7 @@ learned shipping episodes with it.
   **Leave it out for most work.** It matters when a clip's prompt asks for several shots:
   at 4 steps H3 sometimes ignores a cut you specified (`[Shot 3] at 00:11.000` and the camera
   simply never cuts), and skin on a close-up can look waxy. Higher tiers also render with more
-  detail. Costs 1.2x / 1.4x and **renders ~1.4x / ~1.9x slower** (more when demand is high),
+  detail. Costs 1.3x / 1.6x and **renders ~1.4x / ~1.9x slower** (more when demand is high),
   so budget the wall-clock, not just the money. 480p / 768p only — 1080p has no tiers and
   returns 400. Multi-shot or hero close-up: worth it. A 5-second single-shot establishing
   clip: not worth it.

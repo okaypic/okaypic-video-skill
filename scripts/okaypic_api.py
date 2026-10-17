@@ -26,10 +26,11 @@ H3_CENTS_PER_SECOND = {"480p": 5 / 7, "768p": 1.0, "1080p": 15 / 7}
 
 
 #: Surcharge for the `effort` tier (extra sampling steps). Well under the
-#: render-time multiple — 2x renders ~1.9x slower but costs 1.4x. Mirrors
-#: okaypic's GET /v1/api/effort; that endpoint is what actually bills.
+#: render-time multiple — 2x renders ~1.9x slower and costs 1.6x. Mirrors
+#: okaypic's GET /v1/api/effort; that endpoint is what actually bills, and the
+#: rates are a trial setting that will move once real usage comes in.
 #: ⚠️ 1080p has no tiers (no in-house path there) — sending one returns 400.
-H3_EFFORT_SURCHARGE = {"1x": 1.0, "1.5x": 1.2, "2x": 1.4}
+H3_EFFORT_SURCHARGE = {"1x": 1.0, "1.5x": 1.3, "2x": 1.6}
 
 
 def h3_cost_cents(resolution, seconds, effort="1x"):
