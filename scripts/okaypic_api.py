@@ -25,8 +25,15 @@ TOP_UP_URL = "https://okaypic.com/billing"
 H3_CENTS_PER_SECOND = {"480p": 5 / 7, "768p": 1.0, "1080p": 15 / 7}
 
 
-def h3_cost_cents(resolution, seconds):
-    return math.ceil(H3_CENTS_PER_SECOND.get(resolution, 1.0) * seconds)
+#: Surcharge for the `effort` tier (extra sampling steps). The API charges the
+#: added GPU time, not a multiple of the price — 2x renders ~1.9x slower but
+#: costs ~33% more. Mirrors okaypic's GET /v1/api/effort; that endpoint wins.
+H3_EFFORT_SURCHARGE = {"1x": 1.0, "1.5x": 1.17, "2x": 1.33}
+
+
+def h3_cost_cents(resolution, seconds, effort="1x"):
+    rate = H3_CENTS_PER_SECOND.get(resolution, 1.0)
+    return math.ceil(rate * H3_EFFORT_SURCHARGE.get(effort, 1.0) * seconds)
 
 
 def usd(cents):

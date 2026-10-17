@@ -17,6 +17,13 @@ learned shipping episodes with it.
 }
 ```
 
+- `effort` buys more sampling steps: `1x` (default, 4 steps) / `1.5x` (6) / `2x` (8).
+  **Leave it out for most work.** It matters when a clip's prompt asks for several shots:
+  at 4 steps H3 sometimes ignores a cut you specified (`[Shot 3] at 00:11.000` and the camera
+  simply never cuts), and skin on a close-up can look waxy. Higher tiers also render with more
+  detail. Costs +17% / +33% and renders ~1.4x / ~1.9x slower, and those tiers run only on
+  okaypic's own GPUs, so they can queue when it's busy. Multi-shot or hero close-up: worth it.
+  A 5-second single-shot establishing clip: not worth it.
 - `media` images become `<Picture 1>`, `<Picture 2>`… in order (≤ 9 images, ≤ 3 audio clips).
   Public https URLs or base64 data URIs (≤ 10 MB each, ≤ 12 per request); data URIs are stored on
   okaypic's CDN for you. `gen_clips.py` inlines sheets downscaled to 2048 px.

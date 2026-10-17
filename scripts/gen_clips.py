@@ -78,7 +78,9 @@ def main():
             work.append((f"{shot['id']}_{'abcdef'[i]}", shot, 1000 + int(shot["id"]) * 10 + n))
 
     def shot_cost(shot):
-        return h3_cost_cents(spec.get("resolution", "768p"), shot.get("duration", spec.get("duration", 10)))
+        return h3_cost_cents(spec.get("resolution", "768p"),
+                             shot.get("duration", spec.get("duration", 10)),
+                             shot.get("effort", spec.get("effort", "1x")))
 
     def to_submit():
         out = []
@@ -156,6 +158,11 @@ def main():
                 "ref_mode": "omni", "optimize_prompt": True, "seed": seed,
                 "client_request_id": f"{tag}-{k}-{attempt}",
             }
+            # `effort` buys more sampling steps. Only send a non-default tier:
+            # omitting it is exactly 1x, and an older API would reject the field.
+            effort = shot.get("effort", spec.get("effort", "1x"))
+            if effort != "1x":
+                body["effort"] = effort
             media = [{"type": "image", "url": ref(n)} for n in shot.get("refs", [])]
             if media:
                 body["media"] = media
