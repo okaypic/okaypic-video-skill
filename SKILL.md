@@ -13,8 +13,11 @@ asks for something else.
 
 ## Setup (once)
 
-- `OKAYPIC_API_KEY` in the environment or a `.env` file in the project (never print it, never
-  commit it). Keys: https://okaypic.com/api-docs . Prices: https://okaypic.com/pricing .
+- An API key: `OKAYPIC_API_KEY` in the environment or a `.env` file in the project, or the file
+  `~/.okaypic/key` (never print it, never commit it). Keys: https://okaypic.com/api-docs .
+  Prices: https://okaypic.com/pricing .
+- No account? An agent with a USDC wallet can pay instead (x402, no sign-up): see "Paying with
+  USDC" below.
 - `ffmpeg` and `ffprobe` on PATH. Python 3.9+, stdlib only.
 - Fonts for captions: `python scripts/fetch_fonts.py <project>/assets` (Noto Sans + Noto Sans SC,
   OFL). Optional `<project>/assets/logo.png` for the end card.
@@ -102,10 +105,38 @@ the estimate before each paid step and **get their OK on the plan before generat
 - The scripts check the balance and stop with a top-up link when it won't cover the batch, or when
   the API answers 402 mid-batch (in-flight takes keep rendering and are downloaded). Tell the user
   plainly: what it costs, what is left, that they can top up from US$2 at
-  https://okaypic.com/billing (card or WeChat Pay), and that re-running continues where it stopped.
+  https://okaypic.com/billing (card or WeChat Pay) or with USDC (below), and that re-running
+  continues where it stopped.
   New accounts start with a small free credit that runs out after a few clips; say so before
   their first paid batch rather than after it fails.
 - `GET /api/balance` returns `{"balanceCents": ...}` for the key.
+
+### Paying with USDC (x402, no account)
+
+If the user has no okaypic account but the agent has an x402-capable wallet tool (for example the
+agentcash MCP server, or a script using `@x402/fetch`), the agent can buy credit itself:
+
+1. Ask the user how much to load (US$1–500) and on which chain; spending their money needs a yes.
+2. `POST https://api.okaypic.com/api/agent/topup?amount=5` through the wallet tool. The first
+   answer is HTTP 402 with the price; the tool signs a USDC payment and resends. Accepted: USDC on
+   Base, Solana, Polygon, Arbitrum, Avalanche or Monad. Pick the chain the wallet actually holds
+   USDC on: some clients just take the first option offered (Base) without checking balances.
+3. The answer carries an `apiKey`, shown once. Save it at once with
+   `python scripts/okaypic_api.py save-key okpk_...` (writes `~/.okaypic/key`), then use the
+   scripts as normal. `GET /api/agent/account` shows the balance; top up again the same way.
+
+The skill never asks for, reads or stores a wallet's private key: signing stays in the wallet tool.
+A lost key can be replaced by signing a message with the same wallet (`POST /api/agent/key/recover`,
+https://okaypic.com/api.md).
+
+### Spending limit
+
+Every paid call is priced first with the free `POST /api/quote`, and the scripts keep a per-project
+ledger (`.okaypic-spend.json` in the working directory, reset after 12 hours). When the next call
+or batch would push spending past `OKAYPIC_MAX_SPEND_USD` (default 5.00) they stop with
+"Budget stop" and charge nothing. Then ask the user, and continue only with their yes by re-running
+with a higher limit, e.g. `OKAYPIC_MAX_SPEND_USD=10`. Never raise it on your own. `python
+scripts/okaypic_api.py budget` prints what was spent and what is left.
 
 ## Guardrails
 

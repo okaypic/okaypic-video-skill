@@ -37,7 +37,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from okaypic_api import TOP_UP_URL, balance_cents, data_uri, download, h3_cost_cents, project_tag, request, usd  # noqa: E402
+from okaypic_api import TOP_UP_URL, X402_DOCS, balance_cents, budget_left_cents, budget_limit_cents, data_uri, download, h3_cost_cents, record_spend, project_tag, request, usd  # noqa: E402
 from edit import level_take  # noqa: E402
 
 MAX_INFLIGHT = 18
@@ -106,10 +106,19 @@ def main():
     out_of_funds = False
     if left and bal is not None and bal < cost:
         print(f"Not enough balance for the remaining takes ({usd(cost)} needed, {usd(bal)} left). "
-              f"Top up from US$2 at {TOP_UP_URL} and re-run; finished takes are kept.", flush=True)
+              f"Top up from US$2 at {TOP_UP_URL} or with USDC (x402, {X402_DOCS}) and re-run; "
+              "finished takes are kept.", flush=True)
         if not flying:
             return
         out_of_funds = True  # just finish what is in flight
+    budget = budget_left_cents()
+    if left and not out_of_funds and budget is not None and cost > budget:
+        print(f"Budget stop: {usd(cost)} to render but only {usd(budget)} left of this project's "
+              f"OKAYPIC_MAX_SPEND_USD={usd(budget_limit_cents())}. Ask the user before spending more; to go on, "
+              "re-run with a higher OKAYPIC_MAX_SPEND_USD. Finished takes are kept.", flush=True)
+        if not flying:
+            return
+        out_of_funds = True
 
     ref_cache = {}
 
@@ -174,11 +183,13 @@ def main():
             if code in (200, 201, 202) and r.get("taskId"):
                 state[k] = {"status": "submitted", "taskId": r["taskId"], "seed": seed, "attempt": attempt}
                 inflight.append(k)
+                record_spend(body["client_request_id"], shot_cost(shot))
                 print(f"submitted {k} seed={seed}", flush=True)
             elif code == 402:
                 out_of_funds = True
                 print(f"Balance ran out ({usd(r.get('balanceCents', 0))} left, this take costs "
-                      f"{usd(r.get('costCents', 0))}). Top up from US$2 at {TOP_UP_URL} and re-run; "
+                      f"{usd(r.get('costCents', 0))}). Top up from US$2 at {TOP_UP_URL} or with USDC (x402, {X402_DOCS}) "
+                      "and re-run; "
                       "nothing already rendered or in flight is charged again.", flush=True)
                 break
             else:

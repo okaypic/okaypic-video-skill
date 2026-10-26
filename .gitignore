@@ -11,3 +11,4 @@ filter_*.txt
 state.json
 .okaypic_req_*.json
 __pycache__/
+.okaypic-spend.json

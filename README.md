@@ -50,6 +50,12 @@ Requirements: Python 3.9+, `ffmpeg` + `ffprobe` on PATH, an okaypic API key
 (`OKAYPIC_API_KEY` in the environment or a `.env` file). Get a key and read the API reference at
 https://okaypic.com/api-docs .
 
+No account? An agent with a USDC wallet (x402: Base, Solana, Polygon, Arbitrum, Avalanche or
+Monad) can buy credit itself with `POST https://api.okaypic.com/api/agent/topup?amount=5` and save
+the returned key with `python scripts/okaypic_api.py save-key okpk_...`. The skill never touches
+wallet keys. Spending stops at `OKAYPIC_MAX_SPEND_USD` (default US$5 per project) until the user
+says to go on. Details in SKILL.md.
+
 ## Use the scripts without Claude
 
 ```bash
