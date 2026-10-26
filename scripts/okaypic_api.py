@@ -202,6 +202,12 @@ def _record(client_request_id, cents):
 record_spend = _record  # for scripts that call request() directly (gen_clips.py)
 
 
+def claim_url():
+    """For an account an x402 payment created: the link that moves it to the user's Google login."""
+    code, r = request("GET", "/api/agent/account")
+    return r.get("claimUrl") if code == 200 else None
+
+
 def _curl(method, url, headers, body):
     cmd = ["curl", "-s", "-X", method, url, "-w", "\n%{http_code}", "--max-time", "180"]
     for k, v in headers.items():

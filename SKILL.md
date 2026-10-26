@@ -124,6 +124,9 @@ agentcash MCP server, or a script using `@x402/fetch`), the agent can buy credit
 3. The answer carries an `apiKey`, shown once. Save it at once with
    `python scripts/okaypic_api.py save-key okpk_...` (writes `~/.okaypic/key`), then use the
    scripts as normal. `GET /api/agent/account` shows the balance; top up again the same way.
+4. The answer also has a `claimUrl`. Give it to the user: opening it and signing in with Google
+   shows everything the agent made on okaypic.com and moves the balance and the key to their
+   account (the key keeps working). `gen_clips.py` prints the link again when a batch is done.
 
 The skill never asks for, reads or stores a wallet's private key: signing stays in the wallet tool.
 A lost key can be replaced by signing a message with the same wallet (`POST /api/agent/key/recover`,
